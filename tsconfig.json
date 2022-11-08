@@ -1,0 +1,13 @@
+{
+    "compilerOptions":
+    {
+        "target": "es6",
+        "sourceMap": true,
+        "declaration": false,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "noImplicitReturns": true
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"]
+}
