@@ -1,0 +1,21 @@
+#board
+{
+    border: 5px solid rgb(0, 0, 0);
+}
+
+td, tr, table
+{
+    margin: 0px;
+    padding: 0px
+}
+
+.black
+{
+    background-color: rgb(0, 0, 0);
+    color: white;
+    text-align: center;
+}
+.white
+{
+    background-color: rgb(255, 255, 255);
+}
