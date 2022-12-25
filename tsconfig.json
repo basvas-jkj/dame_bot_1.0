@@ -1,12 +1,14 @@
 {
     "compilerOptions":
     {
+        "module": "CommonJS",
         "target": "es6",
         "sourceMap": true,
         "declaration": false,
         "noImplicitAny": true,
         "removeComments": true,
-        "noImplicitReturns": true
+        "noImplicitReturns": true,
+        "resolveJsonModule": true
     },
     "include": ["src"],
     "exclude": ["node_modules"]

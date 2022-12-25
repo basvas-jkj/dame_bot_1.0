@@ -15,48 +15,6 @@ export enum PIECE_TYPE
 
 export class PIECE
 {
-    //  ----------------------
-    //  |   static members   |
-    //  ----------------------
-    /* -----------------------------------
-     * | Creates pieces for white player |
-     * | and returns them as an array.   |
-     * -----------------------------------
-     */
-    static prepare_for_white()
-    {
-        let pieces = new Array<PIECE>(0);
-        for (let i = 0; i < 8; i += 2)
-        {
-            pieces.push(new PIECE(6, i, PIECE_TYPE.white_man));
-        }
-        for (let i = 1; i < 8; i += 2)
-        {
-            pieces.push(new PIECE(5, i, PIECE_TYPE.white_man));
-            pieces.push(new PIECE(7, i, PIECE_TYPE.white_man));
-        }
-        return pieces;
-    }
-    /* -----------------------------------
-     * | Creates pieces for black player |
-     * | and returns them as an array.   |
-     * -----------------------------------
-     */
-    static prepare_for_black()
-    {
-        let pieces = new Array<PIECE>(0);
-        for (let i = 0; i < 8; i += 2)
-        {
-            pieces.push(new PIECE(0, i, PIECE_TYPE.black_man));
-            pieces.push(new PIECE(2, i, PIECE_TYPE.black_man));
-        }
-        for (let i = 1; i < 8; i += 2)
-        {
-            pieces.push(new PIECE(1, i, PIECE_TYPE.black_man));
-        }
-        return pieces;
-    }
-
     //  ------------------------
     //  |   instance members   |
     //  ------------------------

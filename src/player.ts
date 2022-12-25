@@ -1,5 +1,6 @@
 import * as $ from "jquery";
 import {PIECE, PIECE_TYPE} from "./piece";
+import * as starting_position from "./starting_position.json";
 
 export class PLAYER
 {
@@ -20,8 +21,17 @@ export class PLAYER
     {
         PLAYER.white = new PLAYER("white", false);
         PLAYER.black = new PLAYER("black", true);
+
+        if (starting_position.player_on_move == "white")
+        {
         PLAYER.player_on_move = PLAYER.white;
         $("#player").text("white");
+    }
+        else
+        {
+            PLAYER.player_on_move = PLAYER.black;
+            $("#player").text("black");
+        }
     }
 
     /* -------------------------------------
@@ -70,13 +80,11 @@ export class PLAYER
     constructor(colour: "white" | "black", automatic: boolean)
     {
         this.automatic = automatic;
-        if (colour == "white")
+
+        this.pieces = [];
+        for (const piece of starting_position[colour])
         {
-            this.pieces = PIECE.prepare_for_white();
-        }
-        else
-        {
-            this.pieces = PIECE.prepare_for_black();
+            this.pieces.push(new PIECE(piece.row, piece.column, piece.type as PIECE_TYPE));
         }
 
         for (let i = 0; i < this.pieces.length; i += 1)
