@@ -1,6 +1,7 @@
-﻿import * as $ from "jquery";
-import {PIECE, PIECE_TYPE} from "./piece";
+import * as $ from "jquery";
+
 import {PLAYER} from "./player";
+import {PIECE, PIECE_TYPE} from "./piece";
 
 type SQUARE = JQuery<HTMLElement>;
 type FIELD = {square: SQUARE, piece: PIECE}
@@ -51,12 +52,43 @@ function move_piece(from: SQUARE, to: SQUARE)
 {
     const previous = square_to_field(from);
     const next = square_to_field(to);
-    previous.piece.move(row_of_square(to), column_of_square(to))
 
-    next.piece = previous.piece;
-    previous.piece = null;
-    from.html("");
-    to.html(next.piece.type);
+    const next_row = row_of_square(to);
+    const next_column = column_of_square(to);
+
+    if (previous.piece.is_possible_move(next_row, next_column))
+    {
+        previous.piece.move(next_row, next_column);
+
+        next.piece = previous.piece;
+        previous.piece = null;
+        from.html("");
+        to.html(next.piece.type);
+    
+        PLAYER.switch_players();
+    }
+    else
+    {
+        throw new Error();
+        }
+}
+
+/* --------------------------------
+ * | Returns piece object located |
+ * | in the row and the column,   |
+ * | both given as arguments.          |
+ * --------------------------------
+ */
+export function get_piece(row: number, column: number)
+{
+    if (row > 7 || row < 0 || column > 7 || column < 0)
+    {
+        throw new Error();
+    }
+    else
+    {
+        return fields[row][column].piece;
+    }
 }
 
 //  --------------------
@@ -91,8 +123,12 @@ function black_click(this: HTMLElement)
     {
         if (clicked_square.html() == "")
         {
-            move_piece(original_square, clicked_square);
-            abort_move();
+            try
+            {
+                move_piece(original_square, clicked_square);
+                abort_move();
+            }
+            catch {}
         }
     }
     else if (PLAYER.is_players_piece(clicked_square.html() as PIECE_TYPE))
