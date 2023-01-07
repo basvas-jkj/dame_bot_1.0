@@ -1,12 +1,13 @@
 import * as $ from "jquery";
-import {PIECE, PIECE_TYPE} from "./piece";
 import * as starting_position from "./starting_position.json";
+
+import {PIECE, PIECE_TYPE} from "./piece";
 
 export class PLAYER
 {
-    //  ----------------------
-    //  |   static members   |
-    //  ----------------------
+    //  --------------------------------------------------------------------------------
+    //  |                                static members                                |
+    //  --------------------------------------------------------------------------------
     private static white: PLAYER;
     private static black: PLAYER;
     private static player_on_move: PLAYER;
@@ -52,6 +53,24 @@ export class PLAYER
         }
     }
 
+    /* -----------------------------------------
+     * | Checks if any piece of the player who |
+     * | is currently on the turn can capture  |
+     * | any piece of the other player.        |
+     * -----------------------------------------
+     */
+    static can_capture()
+    {
+        for (const piece of this.player_on_move.pieces)
+        {
+            if (piece.can_capture())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /* ------------------------
      * | Changes which player |
      * | is on the move.      |
@@ -71,9 +90,23 @@ export class PLAYER
         }
     }
 
-    //  ------------------------
-    //  |   instance members   |
-    //  ------------------------
+    /* ------------------------------
+     * | Remove captured piece      |
+     * | (given as an argument)     |
+     * | from pieces list of player |
+     * | that is not on the move.   |
+     * ------------------------------
+     */
+    static remove_piece(piece: PIECE)
+    {
+        let other_player = (PLAYER.player_on_move == PLAYER.white) ? PLAYER.black : PLAYER.white;
+        let index = other_player.pieces.indexOf(piece);
+        other_player.pieces.splice(index, 1);
+    }
+
+    //  --------------------------------------------------------------------------------
+    //  |                               instance members                               |
+    //  --------------------------------------------------------------------------------
     private readonly automatic: boolean;
     private readonly pieces: PIECE[];
 

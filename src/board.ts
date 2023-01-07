@@ -7,9 +7,10 @@ type SQUARE = JQuery<HTMLElement>;
 type FIELD = {square: SQUARE, piece: PIECE}
 let fields: FIELD[][]; // rows × collums
 
-//  -------------------------
-//  |   helping functions   |
-//  -------------------------
+
+//  ---------------------------------------------------------------------------------
+//  |                               helping functions                               |
+//  ---------------------------------------------------------------------------------
 
 /* --------------------------
  * | Returns the row number |
@@ -43,40 +44,248 @@ function square_to_field(square: SQUARE)
     return fields[row][column];
 }
 
-/* -----------------------
- * | Invokes the move of |
- * | the chosen piece.   |
- * -----------------------
+/* ------------------------------
+ * | Marks the piece which      |
+ * | player wants to move with. |
+ * ------------------------------
  */
-function move_piece(from: SQUARE, to: SQUARE)
+function mark(field: FIELD)
 {
-    const previous = square_to_field(from);
-    const next = square_to_field(to);
+    field.square.css("color", "rgb(255, 0, 0)");
+}
 
-    const next_row = row_of_square(to);
-    const next_column = column_of_square(to);
+/* ----------------------------------
+ * | Unmarks the piece which player |
+ * | no longer wants to move with.  |
+ * ----------------------------------
+ */
+function unmark(field: FIELD)
+{
+    field?.square.css("color", "rgb(255, 255, 255)");
+}
 
-    if (previous.piece.is_possible_move(next_row, next_column))
+/* ----------------------------------
+ * | Moves the piece on the board.  |
+ * | Invokes the internal change of |
+ * | position in the piece object.  |
+ * ----------------------------------
+ */
+function move_piece(previous: FIELD, next: FIELD)
+{
+    const next_row = row_of_square(next.square);
+    const next_column = column_of_square(next.square);
+
+    previous.piece.move(next_row, next_column);
+
+    next.piece = previous.piece;
+    previous.piece = null;
+    previous.square.html("");
+    next.square.html(next.piece.type);
+}
+
+
+//  ---------------------------------------------------------------------------------
+//  |                                move validation                                |
+//  ---------------------------------------------------------------------------------
+
+let captured_pieces = Array<PIECE>(); // Stores all pieces which are going to be captured in this turn.
+
+/* --------------------------------
+ * | Represents the type of move. |
+ * --------------------------------
+ */
+enum MOVE_TYPE
+{
+    possible, impossible, capturing
+}
+
+/* ----------------------------------
+ * | Checks if the ongoing move is  |
+ * | possible. It is also useful to |
+ * | distinguish capturing from     |
+ * | regular moves.                 |
+ * ----------------------------------
+ */
+function check_move(from: FIELD, to: FIELD)
+{
+    const next_row = row_of_square(to.square);
+    const next_column = column_of_square(to.square);
+
+    if (capturing)
     {
-        previous.piece.move(next_row, next_column);
-
-        next.piece = previous.piece;
-        previous.piece = null;
-        from.html("");
-        to.html(next.piece.type);
-    
-        PLAYER.switch_players();
+        let captured_piece = from.piece.is_possible_capture(next_row, next_column);
+        
+        if (captured_piece != null)
+        {
+            captured_pieces.push(captured_piece);
+            return MOVE_TYPE.capturing;
+        }
+        else
+        {
+            return MOVE_TYPE.impossible;
+        }
+    }
+    else if (PLAYER.can_capture())
+    {
+        let captured_piece = from.piece.is_possible_capture(next_row, next_column);
+        if (captured_piece != null)
+        {
+            captured_pieces.push(captured_piece);
+            return MOVE_TYPE.capturing;
+        }
+        else
+        {
+            return MOVE_TYPE.impossible;
+        }
+    }
+    else if (from.piece.is_possible_move(next_row, next_column))
+    {
+        return MOVE_TYPE.possible;
     }
     else
     {
-        throw new Error();
-        }
+        return MOVE_TYPE.impossible;
+    }
 }
+
+
+//  --------------------------------------------------------------------------------
+//  |                                 board events                                 |
+//  --------------------------------------------------------------------------------
+
+let moving = false;                // Indicates whether the player on the turn clicked on a piece which will be moving.
+let capturing = false;             // Indicates whether the player on the turn wants to make multiple capture.
+
+let previous_field: FIELD = null;  // Contains the last field of the piece which is moving at the moment (it change with e).
+let original_field: FIELD = null;  // Contains the original field of the piece which is capturing at the moment.
+let actual_field: FIELD = null;    // Contains the actual field of the piece which is capturing at the moment.
+
+/* ---------------------------------
+ * | Performs all the steps that   |
+ * | accompany an interrupted turn |
+ * | (such as unmarking moved      |
+ * | piece and sending it back to  |
+ * | the initial position).        |
+ * ---------------------------------
+ */
+function abort_move()
+{
+    if (capturing)
+    {
+        move_piece(actual_field, original_field);
+        captured_pieces = Array<PIECE>()
+        capturing = false;
+    }
+
+    unmark(previous_field);
+    moving = false;
+}
+
+/* -------------------------------
+ * | Performs all the steps that |
+ * | accompany a successful end  |
+ * | of turn (such as unmarking  |
+ * | moved piece, removing       |
+ * | captured pieces etc).       |
+ * -------------------------------
+ */
+function end_move()
+{
+    unmark(previous_field);
+    moving = false;
+    while (captured_pieces.length > 0)
+    {
+        let piece = captured_pieces.pop();
+        remove_piece(piece);
+    }
+    PLAYER.switch_players();
+}
+
+/* -----------------------------------
+ * | If there is a marked piece and  |
+ * | the clicked field is empty,     |
+ * | executes the move. Otherwise,   |
+ * | marks the chosen piece if there |
+ * | is any on the clicked field.      |
+ * -----------------------------------
+ */
+function black_square_click(this: HTMLElement)
+{
+    let clicked_field = square_to_field($(this));
+    
+    if (moving && clicked_field.square.html() == "")
+    {
+        let move_state = check_move(previous_field, clicked_field);
+        if (capturing)
+        {
+            if (move_state == MOVE_TYPE.capturing)
+            {
+                move_piece(previous_field, clicked_field);
+
+                if (clicked_field.piece.can_capture() && clicked_field.piece.row != 0 && clicked_field.piece.row != 7)
+                {
+                    actual_field = clicked_field;
+                    unmark(previous_field);
+                    mark(clicked_field);
+                    previous_field = clicked_field;
+                }
+                else
+                {
+                    capturing = false;
+                    end_move();
+                }
+            }
+        }
+        else if (move_state == MOVE_TYPE.possible)
+        {
+            move_piece(previous_field, clicked_field);
+            end_move();
+        }
+        else if (move_state == MOVE_TYPE.capturing)
+        {
+            move_piece(previous_field, clicked_field);
+
+            if (clicked_field.piece.can_capture() && clicked_field.piece.row != 0 && clicked_field.piece.row != 7)
+            {
+                original_field = previous_field;
+                actual_field = clicked_field;
+                capturing = true;
+
+                unmark(previous_field);
+                mark(clicked_field);
+                previous_field = clicked_field;
+            }
+            else
+            {
+                end_move();
+            }
+        }
+    }
+    else if (PLAYER.is_players_piece(clicked_field.square.html() as PIECE_TYPE))
+    {
+        if (moving)
+        {
+            if (clicked_field == actual_field)
+            {
+                return;
+            }
+            abort_move();
+        }
+        mark(clicked_field);
+        previous_field = clicked_field;
+        moving = true;
+    }
+}
+
+
+//  --------------------------------------------------------------------------------
+//  |                           operation with gameboard                           |
+//  --------------------------------------------------------------------------------
 
 /* --------------------------------
  * | Returns piece object located |
  * | in the row and the column,   |
- * | both given as arguments.          |
+ * | both given as arguments.     |
  * --------------------------------
  */
 export function get_piece(row: number, column: number)
@@ -91,57 +300,18 @@ export function get_piece(row: number, column: number)
     }
 }
 
-//  --------------------
-//  |   board events   |
-//  --------------------
-let moving = false;
-let original_square: SQUARE = null;
-
-/* --------------------------
- * | Unchecks marked piece. |
- * --------------------------
+/* -------------------------------
+ * | Removes the piece passed as |
+ * | an argument from gameboard. |
+ * -------------------------------
  */
-function abort_move()
+export function remove_piece(piece: PIECE)
 {
-    original_square?.css("color", "rgb(255, 255, 255)")
-    original_square = null;
-    moving = false;
+    let field = fields[piece.row][piece.column];
+    field.piece = null;
+    field.square.html("");
+    PLAYER.remove_piece(piece);
 }
-
-/* -----------------------------------
- * | If there is a marked piece and  |
- * | the clicked field is empty,     |
- * | executes the move. Otherwise,   |
- * | marks the chosen piece if there |
- * | is any on the click field.      |
- * -----------------------------------
- */
-function black_click(this: HTMLElement)
-{
-    let clicked_square = $(this);
-    if (moving)
-    {
-        if (clicked_square.html() == "")
-        {
-            try
-            {
-                move_piece(original_square, clicked_square);
-                abort_move();
-            }
-            catch {}
-        }
-    }
-    else if (PLAYER.is_players_piece(clicked_square.html() as PIECE_TYPE))
-    {
-        clicked_square.css("color", "rgb(255, 0, 0)");
-        original_square = clicked_square;
-        moving = true;
-    }
-}
-
-//  --------------------------------
-//  |   preparation of gameboard   |
-//  --------------------------------
 
 /* ---------------------------------
  * | Shows the piece passed as an  |
@@ -183,8 +353,8 @@ export function create()
         }
         $("#board").append(row);
     }
-
+    
+    $(".black").click(black_square_click);
     $(".white").click(abort_move);
-    $(".black").click(black_click);
     $("#board").mouseleave(abort_move);
 }
