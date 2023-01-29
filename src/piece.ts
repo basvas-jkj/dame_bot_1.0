@@ -53,7 +53,7 @@ export class PIECE
     {
         return (this.type == PIECE_TYPE.white_man || this.type == PIECE_TYPE.white_king);
     }
-    
+
     /* -------------------------------
      * | Returns true if this piece  |
      * | has different colour than   |
@@ -195,7 +195,7 @@ export class PIECE
         {
             let valid_row = (next_row == this.row - 1);
             let valid_collumn = (next_column == this.column + 1 || next_column == this.column - 1)
-            
+
             if (next_row == 0)
             {
                 this._type = PIECE_TYPE.white_king;
@@ -207,12 +207,12 @@ export class PIECE
         {
             let valid_row = (next_row == this.row + 1);
             let valid_collumn = (next_column == this.column + 1 || next_column == this.column - 1)
-            
+
             if (next_row == 7)
             {
                 this._type = PIECE_TYPE.black_king;
             }
-            
+
             return (valid_row && valid_collumn);
         }
         else if (this.row - this.column == next_row - next_column || this.row + this.column == next_row + next_column)
@@ -226,7 +226,7 @@ export class PIECE
             {
                 row += row_change;
                 column += column_change;
-                
+
                 if (BOARD.get_piece(row, column) != null)
                 {
                     return false;
@@ -384,6 +384,166 @@ export class PIECE
             }
             catch {}
         }
+        return false;
+    }
+
+    /* ----------------------------
+     * | Checks if this piece can |
+     * | be captured by any piece |
+     * | of the other player.     |
+     * ----------------------------
+     */
+    is_threatened()
+    {
+        const row = this.row;
+        const column = this.column;
+        if (row == 0 || row == 7 || column == 0 || column == 7)
+        {
+            return false;
+        }
+        const direction = (this.is_white) ? -1 : 1;
+
+        if (BOARD.get_piece(row - direction, column - 1) == null)
+        {
+            let r = row + direction;
+            let c = column + 1;
+            let other_piece = BOARD.get_piece(r, c);
+
+            if (other_piece?.has_opposite_colour(this))
+            {
+                return true;
+            }
+
+            try
+            {
+                let second_piece = true;
+                let has_opposite_colour = other_piece?.has_opposite_colour(this);
+                while (has_opposite_colour == null || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
+                {
+                    if (has_opposite_colour && !other_piece?.is_man)
+                    {
+                        return true;
+                    }
+                    else if (has_opposite_colour != null && !has_opposite_colour)
+                    {
+                        second_piece = true;
+                    }
+                    else
+                    {
+                        second_piece = false;
+                    }
+                    r += direction;
+                    c += 1;
+                    other_piece = BOARD.get_piece(r, c);
+                    has_opposite_colour = other_piece?.has_opposite_colour(this);
+                }
+            }
+            catch {}
+        }
+
+        if (BOARD.get_piece(row - direction, column + 1) == null)
+        {
+            let r = row + direction;
+            let c = column - 1;
+            let other_piece = BOARD.get_piece(r, c);
+
+            if (other_piece?.has_opposite_colour(this))
+            {
+                return true;
+            }
+
+            try
+            {
+                let second_piece = true;
+                let has_opposite_colour = other_piece?.has_opposite_colour(this);
+                while (has_opposite_colour == null || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
+                {
+                    if (has_opposite_colour && !other_piece?.is_man)
+                    {
+                        return true;
+                    }
+                    else if (has_opposite_colour != null && !has_opposite_colour)
+                    {
+                        second_piece = true;
+                    }
+                    else
+                    {
+                        second_piece = false;
+                    }
+                    r += direction;
+                    c -= 1;
+                    other_piece = BOARD.get_piece(r, c);
+                    has_opposite_colour = other_piece?.has_opposite_colour(this);
+                }
+            }
+            catch {}
+        }
+
+        if (BOARD.get_piece(row + direction, column - 1) == null)
+        {
+            let r = row - direction;
+            let c = column + 1;
+            let other_piece = BOARD.get_piece(r, c);
+            try
+            {
+                let second_piece = true;
+                let has_opposite_colour = other_piece?.has_opposite_colour(this);
+                while (has_opposite_colour == null || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
+                {
+                    if (has_opposite_colour && !other_piece?.is_man)
+                    {
+                        return true;
+                    }
+                    else if (has_opposite_colour != null && !has_opposite_colour)
+                    {
+                        second_piece = true;
+                    }
+                    else
+                    {
+                        second_piece = false;
+                    }
+                    r -= direction;
+                    c += 1;
+                    other_piece = BOARD.get_piece(r, c);
+                    has_opposite_colour = other_piece?.has_opposite_colour(this);
+                }
+            }
+            catch {}
+        }
+
+        if (BOARD.get_piece(row + direction, column + 1) == null)
+        {
+            let r = row - direction;
+            let c = column - 1;
+            let other_piece = BOARD.get_piece(r, c);
+
+            try
+            {
+                let second_piece = true;
+                let has_opposite_colour = other_piece?.has_opposite_colour(this);
+                while (has_opposite_colour == null || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
+                {
+                    if (has_opposite_colour && !other_piece?.is_man)
+                    {
+                        return true;
+                    }
+                    else if (has_opposite_colour != null && !has_opposite_colour)
+                    {
+                        second_piece = true;
+                    }
+                    else
+                    {
+                        second_piece = false;
+                    }
+                    r -= direction;
+                    c -= 1;
+                    other_piece = BOARD.get_piece(r, c);
+                    has_opposite_colour = other_piece?.has_opposite_colour(this);
+                }
+            }
+            catch {}
+        }
+
         return false;
     }
 }

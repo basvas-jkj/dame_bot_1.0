@@ -1,6 +1,8 @@
 import * as $ from "jquery";
+import * as NEXT from "./next";
 import * as starting_position from "./starting_position.json";
 
+import {MOVE} from "./move";
 import {PIECE, PIECE_TYPE} from "./piece";
 
 export class PLAYER
@@ -20,18 +22,23 @@ export class PLAYER
      */
     static prepare()
     {
-        PLAYER.white = new PLAYER("white", false);
+        PLAYER.white = new PLAYER("white", true);
         PLAYER.black = new PLAYER("black", true);
 
         if (starting_position.player_on_move == "white")
         {
-        PLAYER.player_on_move = PLAYER.white;
-        $("#player").text("white");
-    }
+            PLAYER.player_on_move = PLAYER.white;
+            $("#player").text("white");
+        }
         else
         {
             PLAYER.player_on_move = PLAYER.black;
             $("#player").text("black");
+        }
+
+        if (PLAYER.player_on_move.automatic)
+        {
+            PLAYER.player_on_move.play();
         }
     }
 
@@ -88,6 +95,11 @@ export class PLAYER
             PLAYER.player_on_move = PLAYER.white;
             $("#player").text("white");
         }
+
+        if (PLAYER.player_on_move.automatic)
+        {
+            PLAYER.player_on_move.play();
+        }
     }
 
     /* ------------------------------
@@ -109,6 +121,7 @@ export class PLAYER
     //  --------------------------------------------------------------------------------
     private readonly automatic: boolean;
     private readonly pieces: PIECE[];
+    private readonly direction: 1 | -1; // Indicates, whether this player's piece should be moved forward or backward.
 
     constructor(colour: "white" | "black", automatic: boolean)
     {
@@ -120,9 +133,81 @@ export class PLAYER
             this.pieces.push(new PIECE(piece.row, piece.column, piece.type as PIECE_TYPE));
         }
 
-        for (let i = 0; i < this.pieces.length; i += 1)
+        this.direction = (colour == "white") ? -1 : 1; // Compared to the regular game, the lines are numbered in reverse order.
+    }
+
+    /* ----------------------------
+     * | Checks if the player can |
+     * | capture any piece of the |
+     * | other player.            |
+     * ----------------------------
+     */
+    private can_capture()
+    {
+        for (let piece of this.pieces)
         {
-            $(this.pieces[i]).on("end_of_move", PLAYER.switch_players);
+            if (piece.can_capture())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /* --------------------------------
+     * | Evaluates all possible moves |
+     * | and chooses the best option. |
+     * --------------------------------
+     */
+    private play()
+    {
+        let can_capture = this.can_capture();
+        let number_of_threatened_men = 0;
+        let number_of_threatened_kings = 0;
+        for (const piece of this.pieces)
+        {
+            if (piece.is_threatened())
+            {
+                (piece.is_man) ? number_of_threatened_men += 1 : number_of_threatened_kings += 1;
+            }
+        }
+        console.clear();
+        console.log("Počet ohrožených kamenů: %d", number_of_threatened_men);
+        console.log("Počet ohrožených dam: %d", number_of_threatened_kings);
+        console.log((can_capture) ? "Hráč může brát." : "Hráč nemůže brát.");
+
+        for (const piece of this.pieces)
+        {
+            let gen: Generator<MOVE, void, void>;
+            if (piece.is_man)
+            {
+                if (can_capture)
+                {
+                    gen = NEXT.man_capture(piece, this.direction);
+                }
+                else
+                {
+                    gen = NEXT.man_move(piece, this.direction);
+                }
+            }
+            else
+            {
+                if (can_capture)
+                {
+                    gen = NEXT.king_capture(piece);
+                }
+                else
+                {
+                    gen = NEXT.king_move(piece);
+                }
+            }
+
+            let move = gen.next().value as MOVE;
+            while (move != null)
+            {
+                console.log(move.to_string());
+                move = gen.next().value as MOVE;
+            }
         }
     }
 }
