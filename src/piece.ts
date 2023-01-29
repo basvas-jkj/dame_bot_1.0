@@ -21,15 +21,15 @@ export class PIECE
     private _column: number;
     private _type: PIECE_TYPE;
 
-    get row()
+    get row(): number
     {
         return this._row;
     }
-    get column()
+    get column(): number
     {
         return this._column;
     }
-    get type()
+    get type(): PIECE_TYPE
     {
         return this._type;
     }
@@ -39,7 +39,7 @@ export class PIECE
      * | man (either black or white).  |
      * ---------------------------------
      */
-    get is_man()
+    get is_man(): boolean
     {
         return (this.type == PIECE_TYPE.white_man || this.type == PIECE_TYPE.black_man);
     }
@@ -49,7 +49,7 @@ export class PIECE
      * | white (either man or king).   |
      * ---------------------------------
      */
-    get is_white()
+    get is_white(): boolean
     {
         return (this.type == PIECE_TYPE.white_man || this.type == PIECE_TYPE.white_king);
     }
@@ -60,7 +60,7 @@ export class PIECE
      * | piece given an an argument. |
      * -------------------------------
      */
-    has_opposite_colour(piece: PIECE)
+    has_opposite_colour(piece: PIECE): boolean
     {
         return (this.is_white != piece.is_white);
     }
@@ -79,7 +79,7 @@ export class PIECE
      * | of this piece.       |
      * ------------------------
      */
-    move(next_row: number, next_column: number)
+    move(next_row: number, next_column: number): void
     {
         this._row = next_row;
         this._column = next_column;
@@ -91,7 +91,7 @@ export class PIECE
      * | which is going to be captured. |
      * ----------------------------------
      */
-    is_possible_capture(next_row: number, next_column: number)
+    is_possible_capture(next_row: number, next_column: number): PIECE | null
     {
         if (this.type == PIECE_TYPE.white_man)
         {
@@ -154,7 +154,7 @@ export class PIECE
             let row_change = (this.row < next_row) ? 1 : -1;
             let column_change = (this.column < next_column) ? 1 : -1;
             let has_captured = false;
-            let captured_piece: PIECE;
+            let captured_piece: PIECE | null = null;
 
             while (row != next_row)
             {
@@ -189,7 +189,7 @@ export class PIECE
      * | move is possible.     |
      * -------------------------
      */
-    is_possible_move(next_row: number, next_column: number)
+    is_possible_move(next_row: number, next_column: number): boolean
     {
         if (this.type == PIECE_TYPE.white_man)
         {
@@ -246,7 +246,7 @@ export class PIECE
      * | other player.            |
      * ----------------------------
      */
-    can_capture()
+    can_capture(): boolean
     {
         const row = this.row;
         const column = this.column;
@@ -259,7 +259,7 @@ export class PIECE
                 let piece_a = BOARD.get_piece(row + direction, column + 1);
                 let piece_b = BOARD.get_piece(row + 2 * direction, column + 2);
 
-                if (piece_b == null && piece_a.has_opposite_colour(this))
+                if (piece_b == null && piece_a!.has_opposite_colour(this))
                 {
                     return true
                 }
@@ -270,7 +270,7 @@ export class PIECE
                 let piece_a = BOARD.get_piece(row + direction, column - 1);
                 let piece_b = BOARD.get_piece(row + 2 * direction, column - 2);
 
-                if (piece_b == null && piece_a.has_opposite_colour(this))
+                if (piece_b == null && piece_a!.has_opposite_colour(this))
                 {
                     return true
                 }
@@ -393,7 +393,7 @@ export class PIECE
      * | of the other player.     |
      * ----------------------------
      */
-    is_threatened()
+    is_threatened(): boolean
     {
         const row = this.row;
         const column = this.column;

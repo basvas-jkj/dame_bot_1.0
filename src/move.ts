@@ -20,12 +20,12 @@ export class MOVE
         this.evaluation = evaluation;
     }
 
-    field_to_string(row: number, column: number)
+    field_to_string(row: number, column: number): string
     {
         return `${String.fromCharCode("a".charCodeAt(0) + column)}${8 - row}`
     }
 
-    to_string()
+    to_string(): string
     {
         let string = `${this.piece.type}: ${this.field_to_string(this.piece.row, this.piece.column)}`;
         for (let field of this.fields)

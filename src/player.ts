@@ -20,7 +20,7 @@ export class PLAYER
      * | is on move in the first turn.   |
      * -----------------------------------
      */
-    static prepare()
+    static prepare(): void
     {
         PLAYER.white = new PLAYER("white", true);
         PLAYER.black = new PLAYER("black", true);
@@ -48,7 +48,7 @@ export class PLAYER
      * | who is currently on the turn.     |
      * -------------------------------------
      */
-    static is_players_piece(piece: PIECE_TYPE)
+    static is_players_piece(piece: PIECE_TYPE): boolean
     {
         if (this.player_on_move == PLAYER.white)
         {
@@ -66,7 +66,7 @@ export class PLAYER
      * | any piece of the other player.        |
      * -----------------------------------------
      */
-    static can_capture()
+    static can_capture(): boolean
     {
         for (const piece of this.player_on_move.pieces)
         {
@@ -83,7 +83,7 @@ export class PLAYER
      * | is on the move.      |
      * ------------------------
      */
-    static switch_players()
+    static switch_players(): void
     {
         if (PLAYER.player_on_move == PLAYER.white)
         {
@@ -109,7 +109,7 @@ export class PLAYER
      * | that is not on the move.   |
      * ------------------------------
      */
-    static remove_piece(piece: PIECE)
+    static remove_piece(piece: PIECE): void
     {
         let other_player = (PLAYER.player_on_move == PLAYER.white) ? PLAYER.black : PLAYER.white;
         let index = other_player.pieces.indexOf(piece);
@@ -142,7 +142,7 @@ export class PLAYER
      * | other player.            |
      * ----------------------------
      */
-    private can_capture()
+    private can_capture(): boolean
     {
         for (let piece of this.pieces)
         {
@@ -159,7 +159,7 @@ export class PLAYER
      * | and chooses the best option. |
      * --------------------------------
      */
-    private play()
+    private play(): void
     {
         let can_capture = this.can_capture();
         let number_of_threatened_men = 0;

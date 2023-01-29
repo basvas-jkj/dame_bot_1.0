@@ -4,7 +4,7 @@ import {PLAYER} from "./player";
 import {PIECE, PIECE_TYPE} from "./piece";
 
 type SQUARE = JQuery<HTMLElement>;
-type FIELD = {square: SQUARE, piece: PIECE}
+type FIELD = {square: SQUARE, piece: PIECE | null}
 let fields: FIELD[][]; // rows × collums
 
 
@@ -17,9 +17,9 @@ let fields: FIELD[][]; // rows × collums
  * | of the square.         |
  * --------------------------
  */
-function row_of_square(square: SQUARE)
+function row_of_square(square: SQUARE): number
 {
-    return Number.parseInt(square.attr("id")[0]);
+    return Number.parseInt(square.attr("id")![0]);
 }
 
 /* -------------------------
@@ -27,9 +27,9 @@ function row_of_square(square: SQUARE)
  * | number of the square. |
  * -------------------------
  */
-function column_of_square(square: SQUARE)
+function column_of_square(square: SQUARE): number
 {
-    return Number.parseInt(square.attr("id")[1]);
+    return Number.parseInt(square.attr("id")![1]);
 }
 
 /* --------------------------------
@@ -37,7 +37,7 @@ function column_of_square(square: SQUARE)
  * | square given as an argument. |
  * --------------------------------
  */
-function square_to_field(square: SQUARE)
+function square_to_field(square: SQUARE): FIELD
 {
     let row = row_of_square(square);
     let column = column_of_square(square);
@@ -49,7 +49,7 @@ function square_to_field(square: SQUARE)
  * | player wants to move with. |
  * ------------------------------
  */
-function mark(field: FIELD)
+function mark(field: FIELD): void
 {
     field.square.css("color", "rgb(255, 0, 0)");
 }
@@ -59,7 +59,7 @@ function mark(field: FIELD)
  * | no longer wants to move with.  |
  * ----------------------------------
  */
-function unmark(field: FIELD)
+function unmark(field: FIELD): void
 {
     field?.square.css("color", "rgb(255, 255, 255)");
 }
@@ -70,17 +70,17 @@ function unmark(field: FIELD)
  * | position in the piece object.  |
  * ----------------------------------
  */
-function move_piece(previous: FIELD, next: FIELD)
+function move_piece(previous: FIELD, next: FIELD): void
 {
     const next_row = row_of_square(next.square);
     const next_column = column_of_square(next.square);
 
-    previous.piece.move(next_row, next_column);
+    previous.piece!.move(next_row, next_column);
 
     next.piece = previous.piece;
     previous.piece = null;
     previous.square.html("");
-    next.square.html(next.piece.type);
+    next.square.html(next.piece!.type);
 }
 
 
@@ -106,14 +106,14 @@ enum MOVE_TYPE
  * | regular moves.                 |
  * ----------------------------------
  */
-function check_move(from: FIELD, to: FIELD)
+function check_move(from: FIELD, to: FIELD): MOVE_TYPE
 {
     const next_row = row_of_square(to.square);
     const next_column = column_of_square(to.square);
 
     if (capturing)
     {
-        let captured_piece = from.piece.is_possible_capture(next_row, next_column);
+        let captured_piece = from.piece!.is_possible_capture(next_row, next_column);
         
         if (captured_piece != null)
         {
@@ -127,7 +127,7 @@ function check_move(from: FIELD, to: FIELD)
     }
     else if (PLAYER.can_capture())
     {
-        let captured_piece = from.piece.is_possible_capture(next_row, next_column);
+        let captured_piece = from.piece!.is_possible_capture(next_row, next_column);
         if (captured_piece != null)
         {
             captured_pieces.push(captured_piece);
@@ -138,7 +138,7 @@ function check_move(from: FIELD, to: FIELD)
             return MOVE_TYPE.impossible;
         }
     }
-    else if (from.piece.is_possible_move(next_row, next_column))
+    else if (from.piece!.is_possible_move(next_row, next_column))
     {
         return MOVE_TYPE.possible;
     }
@@ -156,9 +156,9 @@ function check_move(from: FIELD, to: FIELD)
 let moving = false;                // Indicates whether the player on the turn clicked on a piece which will be moving.
 let capturing = false;             // Indicates whether the player on the turn wants to make multiple capture.
 
-let previous_field: FIELD = null;  // Contains the last field of the piece which is moving at the moment (it change with e).
-let original_field: FIELD = null;  // Contains the original field of the piece which is capturing at the moment.
-let actual_field: FIELD = null;    // Contains the actual field of the piece which is capturing at the moment.
+let previous_field: FIELD | null = null;  // Contains the last field of the piece which is moving at the moment (it change with e).
+let original_field: FIELD | null = null;  // Contains the original field of the piece which is capturing at the moment.
+let actual_field: FIELD | null = null;    // Contains the actual field of the piece which is capturing at the moment.
 
 /* ---------------------------------
  * | Performs all the steps that   |
@@ -168,16 +168,20 @@ let actual_field: FIELD = null;    // Contains the actual field of the piece whi
  * | the initial position).        |
  * ---------------------------------
  */
-function abort_move()
+function abort_move(): void
 {
     if (capturing)
     {
-        move_piece(actual_field, original_field);
+        move_piece(actual_field!, original_field!);
         captured_pieces = Array<PIECE>()
         capturing = false;
     }
 
-    unmark(previous_field);
+    if (previous_field != null)
+    {
+        unmark(previous_field);
+    }
+    
     moving = false;
 }
 
@@ -189,14 +193,14 @@ function abort_move()
  * | captured pieces etc).       |
  * -------------------------------
  */
-function end_move()
+function end_move(): void
 {
-    unmark(previous_field);
+    unmark(previous_field!);
     moving = false;
     while (captured_pieces.length > 0)
     {
         let piece = captured_pieces.pop();
-        remove_piece(piece);
+        remove_piece(piece!);
     }
     PLAYER.switch_players();
 }
@@ -209,23 +213,23 @@ function end_move()
  * | is any on the clicked field.      |
  * -----------------------------------
  */
-function black_square_click(this: HTMLElement)
+function black_square_click(this: HTMLElement): void
 {
     let clicked_field = square_to_field($(this));
     
     if (moving && clicked_field.square.html() == "")
     {
-        let move_state = check_move(previous_field, clicked_field);
+        let move_state = check_move(previous_field!, clicked_field!);
         if (capturing)
         {
             if (move_state == MOVE_TYPE.capturing)
             {
-                move_piece(previous_field, clicked_field);
+                move_piece(previous_field!, clicked_field!);
 
-                if (clicked_field.piece.can_capture() && clicked_field.piece.row != 0 && clicked_field.piece.row != 7)
+                if (clicked_field!.piece!.can_capture() && clicked_field.piece!.row != 0 && clicked_field.piece!.row != 7)
                 {
                     actual_field = clicked_field;
-                    unmark(previous_field);
+                    unmark(previous_field!);
                     mark(clicked_field);
                     previous_field = clicked_field;
                 }
@@ -238,20 +242,20 @@ function black_square_click(this: HTMLElement)
         }
         else if (move_state == MOVE_TYPE.possible)
         {
-            move_piece(previous_field, clicked_field);
+            move_piece(previous_field!, clicked_field);
             end_move();
         }
         else if (move_state == MOVE_TYPE.capturing)
         {
-            move_piece(previous_field, clicked_field);
-
-            if (clicked_field.piece.can_capture() && clicked_field.piece.row != 0 && clicked_field.piece.row != 7)
+            move_piece(previous_field!, clicked_field);
+            
+            if (clicked_field!.piece!.can_capture() && clicked_field.piece!.row != 0 && clicked_field.piece!.row != 7)
             {
                 original_field = previous_field;
                 actual_field = clicked_field;
                 capturing = true;
 
-                unmark(previous_field);
+                unmark(previous_field!);
                 mark(clicked_field);
                 previous_field = clicked_field;
             }
@@ -288,7 +292,7 @@ function black_square_click(this: HTMLElement)
  * | both given as arguments.     |
  * --------------------------------
  */
-export function get_piece(row: number, column: number)
+export function get_piece(row: number, column: number): PIECE | null
 {
     if (row > 7 || row < 0 || column > 7 || column < 0)
     {
@@ -305,7 +309,7 @@ export function get_piece(row: number, column: number)
  * | an argument from gameboard. |
  * -------------------------------
  */
-export function remove_piece(piece: PIECE)
+export function remove_piece(piece: PIECE): void
 {
     let field = fields[piece.row][piece.column];
     field.piece = null;
@@ -319,7 +323,7 @@ export function remove_piece(piece: PIECE)
  * | the appropriate field.        |
  * ---------------------------------
  */
-export function place_piece(piece: PIECE)
+export function place_piece(piece: PIECE): void
 {
     let field = fields[piece.row][piece.column]
     field.square.html(piece.type);
@@ -332,7 +336,7 @@ export function place_piece(piece: PIECE)
  * | of the gameboard. |
  * ---------------------
  */
-export function create()
+export function create(): void
 {
     fields = new Array<FIELD[]>(8);
 

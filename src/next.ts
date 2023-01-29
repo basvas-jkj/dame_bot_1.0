@@ -21,7 +21,7 @@ export enum EVALUATION
  * | given as arguments next_row and next_column. |
  * ------------------------------------------------
  */
-function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
+function will_be_threatened(piece: PIECE, next_row: number, next_column: number): boolean
 {
     if (next_row == 0 || next_row == 7 || next_column == 0 || next_column == 7)
     {
@@ -44,10 +44,10 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
         try
         {
             let second_piece = true;
-            let has_opposite_colour: boolean;
+            let has_opposite_colour: boolean | undefined;
             if (r == piece.row && c == piece.column)
             {
-                has_opposite_colour = null;
+                has_opposite_colour = undefined;
             }
             else
             {
@@ -91,10 +91,10 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
         try
         {
             let second_piece = true;
-            let has_opposite_colour: boolean;
+            let has_opposite_colour: boolean | undefined;
             if (r == piece.row && c == piece.column)
             {
-                has_opposite_colour = null;
+                has_opposite_colour = undefined;
             }
             else
             {
@@ -132,10 +132,10 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
         try
         {
             let second_piece = true;
-            let has_opposite_colour: boolean;
+            let has_opposite_colour: boolean | undefined;
             if (r == piece.row && c == piece.column)
             {
-                has_opposite_colour = null;
+                has_opposite_colour = undefined;
             }
             else
             {
@@ -174,10 +174,10 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
         try
         {
             let second_piece = true;
-            let has_opposite_colour: boolean;
+            let has_opposite_colour: boolean | undefined;
             if (r == piece.row && c == piece.column)
             {
-                has_opposite_colour = null;
+                has_opposite_colour = undefined;
             }
             else
             {
@@ -216,7 +216,7 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
  * | of the turn.                |
  * -------------------------------
  */
-function end_of_move_evaluation(piece: PIECE, next_row: number, next_column: number)
+function end_of_move_evaluation(piece: PIECE, next_row: number, next_column: number): EVALUATION
 {
     let e: EVALUATION = 0;
     if ((next_row == 0 || next_row == 7) && piece.is_man)
@@ -244,7 +244,7 @@ function end_of_move_evaluation(piece: PIECE, next_row: number, next_column: num
  * | in move with another jump.     |
  * ----------------------------------
  */
-function can_king_capture(piece: PIECE, row: number, column: number, row_direction: 1 | -1, column_direction: 1 | -1)
+function can_king_capture(piece: PIECE, row: number, column: number, row_direction: 1 | -1, column_direction: 1 | -1): boolean
 {
     try
     {
@@ -409,8 +409,8 @@ export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = 
     }
     
     let can_jump = false;
-    let jumped_field: PIECE;
-    let next_field: PIECE;
+    let jumped_field: PIECE | null;
+    let next_field: PIECE | null;
 
     if (column < 6 && next_row >= 0 && next_row <= 7)
     {
@@ -449,11 +449,11 @@ export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = 
  * | moves for man given as an argument. |
  * ---------------------------------------
  */
-export function* man_move(piece: PIECE, direction: 1 | -1)
+export function* man_move(piece: PIECE, direction: 1 | -1): Generator<MOVE, void, void>
 {
     const column = piece.column;
     const next_row = piece.row + direction;
-    let next_field: PIECE;
+    let next_field: PIECE | null;
 
     if (column < 7)
     {
@@ -482,12 +482,12 @@ export function* man_move(piece: PIECE, direction: 1 | -1)
  * | moves for man given as an argument. |
  * ---------------------------------------
  */
-export function *king_move(piece: PIECE)
+export function *king_move(piece: PIECE): Generator<MOVE, void, void>
 {
     const row = piece.row;
     const column = piece.column;
 
-    let next_field: PIECE;
+    let next_field: PIECE | null;
 
     let next_row = row + 1;
     let next_column = column + 1;

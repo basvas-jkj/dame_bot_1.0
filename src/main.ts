@@ -8,7 +8,7 @@ import {PLAYER} from "./player";
  * | BOARD and PLAYER objects.       |
  * -----------------------------------
  */
-function ready()
+function ready(): void
 {
     BOARD.create();
     PLAYER.prepare();
