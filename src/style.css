@@ -1,6 +1,8 @@
 #board
 {
     border: 5px solid rgb(0, 0, 0);
+    background-color: gray;
+    padding: 18px 18px 0px 0px;
 }
 
 td, tr, table
@@ -18,4 +20,15 @@ td, tr, table
 .white
 {
     background-color: rgb(255, 255, 255);
+}
+
+.side_row
+{
+    text-align: center;
+    height: 19px;
+}
+.side_column
+{
+    text-align: center;
+    width: 19px;
 }

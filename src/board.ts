@@ -341,18 +341,26 @@ export function create()
         // i = number of row
         fields[i] = new Array<FIELD>(8);
         const row = $("<tr></tr>");
+        row.append(`<td class="side_column">${(8 - i).toString()}</td>`)
         for (let j = 0; j < 8; j += 1)
         {
             // j = number of column
-            const square = $(`<td id=${i}${j}'></td>`);
+            const square = $(`<td id="${i}${j}"></td>`);
             square.attr("width", 100);
             square.attr("height", 100);
-            square.addClass(((i + j) % 2 == 0) ? "black" : "white");
+            square.addClass(((i + j) % 2 == 1) ? "black" : "white");
             row.append(square);
             fields[i][j] = {square: square, piece: null};
         }
         $("#board").append(row);
     }
+    
+    let side_row = $("<tr class='side_row' class ='side_column'><td></td></tr>");
+    for (let i = 0; i < 8; i += 1)
+    {
+        side_row.append(`<td>${String.fromCharCode("a".charCodeAt(0) + i)}</td>`);
+    }
+    $("#board").append(side_row);
     
     $(".black").click(black_square_click);
     $(".white").click(abort_move);
