@@ -111,21 +111,7 @@ function check_move(from: FIELD, to: FIELD): MOVE_TYPE
     const next_row = row_of_square(to.square);
     const next_column = column_of_square(to.square);
 
-    if (capturing)
-    {
-        let captured_piece = from.piece!.is_possible_capture(next_row, next_column);
-        
-        if (captured_piece != null)
-        {
-            captured_pieces.push(captured_piece);
-            return MOVE_TYPE.capturing;
-        }
-        else
-        {
-            return MOVE_TYPE.impossible;
-        }
-    }
-    else if (PLAYER.can_capture())
+    if (original_field != null || PLAYER.can_capture())
     {
         let captured_piece = from.piece!.is_possible_capture(next_row, next_column);
         if (captured_piece != null)
@@ -154,7 +140,6 @@ function check_move(from: FIELD, to: FIELD): MOVE_TYPE
 //  --------------------------------------------------------------------------------
 
 let moving = false;                // Indicates whether the player on the turn clicked on a piece which will be moving.
-let capturing = false;             // Indicates whether the player on the turn wants to make multiple capture.
 
 let previous_field: FIELD | null = null;  // Contains the last field of the piece which is moving at the moment (it change with e).
 let original_field: FIELD | null = null;  // Contains the original field of the piece which is capturing at the moment.
@@ -170,11 +155,11 @@ let actual_field: FIELD | null = null;    // Contains the actual field of the pi
  */
 function abort_move(): void
 {
-    if (capturing)
+    if (original_field != null)
     {
         move_piece(actual_field!, original_field!);
         captured_pieces = Array<PIECE>()
-        capturing = false;
+        original_field = null;
     }
 
     if (previous_field != null)
@@ -197,6 +182,7 @@ function end_move(): void
 {
     unmark(previous_field!);
     moving = false;
+    original_field = null;
     while (captured_pieces.length > 0)
     {
         let piece = captured_pieces.pop();
@@ -213,34 +199,15 @@ function end_move(): void
  * | is any on the clicked field.      |
  * -----------------------------------
  */
-function black_square_click(this: HTMLElement): void
+function black_square_clicked(this: HTMLElement): void
 {
     let clicked_field = square_to_field($(this));
     
     if (moving && clicked_field.square.html() == "")
     {
         let move_state = check_move(previous_field!, clicked_field!);
-        if (capturing)
-        {
-            if (move_state == MOVE_TYPE.capturing)
-            {
-                move_piece(previous_field!, clicked_field!);
-
-                if (clicked_field!.piece!.can_capture() && clicked_field.piece!.row != 0 && clicked_field.piece!.row != 7)
-                {
-                    actual_field = clicked_field;
-                    unmark(previous_field!);
-                    mark(clicked_field);
-                    previous_field = clicked_field;
-                }
-                else
-                {
-                    capturing = false;
-                    end_move();
-                }
-            }
-        }
-        else if (move_state == MOVE_TYPE.possible)
+        
+        if (move_state == MOVE_TYPE.possible)
         {
             move_piece(previous_field!, clicked_field);
             end_move();
@@ -249,11 +216,28 @@ function black_square_click(this: HTMLElement): void
         {
             move_piece(previous_field!, clicked_field);
             
-            if (clicked_field!.piece!.can_capture() && clicked_field.piece!.row != 0 && clicked_field.piece!.row != 7)
+            if (!clicked_field.piece!.is_man)
             {
-                original_field = previous_field;
+                // piece on clicked field is king
+
+                if (clicked_field.piece!.can_capture(captured_pieces))
+                {
+                    original_field ??= previous_field;
+                    actual_field = clicked_field;
+
+                    unmark(previous_field!);
+                    mark(clicked_field);
+                    previous_field = clicked_field;
+                }
+                else
+                {
+                    end_move();
+                }
+            }
+            else if (clicked_field.piece!.can_capture() && clicked_field.piece!.row != 0 && clicked_field.piece!.row != 7)
+            {
+                original_field ??= previous_field;
                 actual_field = clicked_field;
-                capturing = true;
 
                 unmark(previous_field!);
                 mark(clicked_field);
@@ -365,8 +349,8 @@ export function create(): void
         side_row.append(`<td>${String.fromCharCode("a".charCodeAt(0) + i)}</td>`);
     }
     $("#board").append(side_row);
-    
-    $(".black").click(black_square_click);
+
+    $(".black").click(black_square_clicked);
     $(".white").click(abort_move);
     $("#board").mouseleave(abort_move);
 }

@@ -240,151 +240,193 @@ export class PIECE
         }
     }
 
+    /* -------------------------
+     * | Checks if this king   |
+     * | can capture any piece |
+     * | of the other player.  |
+     * -------------------------
+     */
+    private can_king_capture(captured_pieces: PIECE[]): boolean
+    {
+        const row = this.row;
+        const column = this.column;
+        try
+        {
+            let next_row = row;
+            let next_column = column;
+            while (true)
+            {
+                next_row += 1;
+                next_column += 1;
+                let other_piece = BOARD.get_piece(next_row, next_column);
+
+
+                if (other_piece == null)
+                {
+                    continue;
+                }
+                else if (captured_pieces.includes(other_piece))
+                {
+                    break;
+                }
+                else if (other_piece.has_opposite_colour(this) && BOARD.get_piece(next_row + 1, next_column + 1) == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        catch {}
+        try
+        {
+            let next_row = row;
+            let next_column = column;
+            while (true)
+            {
+                next_row -= 1;
+                next_column += 1;
+                let other_piece = BOARD.get_piece(next_row, next_column);
+
+
+                if (other_piece == null)
+                {
+                    continue;
+                }
+                else if (captured_pieces.includes(other_piece))
+                {
+                    break;
+                }
+                else if (other_piece.has_opposite_colour(this) && BOARD.get_piece(next_row - 1, next_column + 1) == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        catch {}
+        try
+        {
+            let next_row = row;
+            let next_column = column;
+            while (true)
+            {
+                next_row += 1;
+                next_column -= 1;
+                let other_piece = BOARD.get_piece(next_row, next_column);
+
+
+                if (other_piece == null)
+                {
+                    continue;
+                }
+                else if (captured_pieces.includes(other_piece))
+                {
+                    break;
+                }
+                else if (other_piece.has_opposite_colour(this) && BOARD.get_piece(next_row + 1, next_column - 1) == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        catch {}
+        try
+        {
+            let next_row = row;
+            let next_column = column;
+            while (true)
+            {
+                next_row -= 1;
+                next_column -= 1;
+                let other_piece = BOARD.get_piece(next_row, next_column);
+
+
+                if (other_piece == null)
+                {
+                    continue;
+                }
+                else if (captured_pieces.includes(other_piece))
+                {
+                    break;
+                }
+                else if (other_piece.has_opposite_colour(this) && BOARD.get_piece(next_row - 1, next_column - 1) == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        catch {}
+
+        return false;
+    }
+
+    /* -------------------------
+     * | Checks if this man    |
+     * | can capture any piece |
+     * | of the other player.  |
+     * -------------------------
+     */
+    private can_man_capture(): boolean
+    {
+        const row = this.row;
+        const column = this.column;
+
+        const direction = (this.is_white) ? -1 : 1;
+        try
+        {
+            let piece_a = BOARD.get_piece(row + direction, column + 1);
+            let piece_b = BOARD.get_piece(row + 2 * direction, column + 2);
+
+            if (piece_b == null && piece_a!.has_opposite_colour(this))
+            {
+                return true
+            }
+        }
+        catch {}
+        try
+        {
+            let piece_a = BOARD.get_piece(row + direction, column - 1);
+            let piece_b = BOARD.get_piece(row + 2 * direction, column - 2);
+
+            if (piece_b == null && piece_a!.has_opposite_colour(this))
+            {
+                return true
+            }
+        }
+        catch {};
+        return false;
+    }
+
     /* ----------------------------
      * | Checks if this piece can |
      * | capture any piece of the |
      * | other player.            |
      * ----------------------------
      */
-    can_capture(): boolean
+    can_capture(captured_pieces: PIECE[] = [])
     {
-        const row = this.row;
-        const column = this.column;
-
         if (this.is_man)
         {
-            const direction = (this.is_white) ? -1 : 1;
-            try
-            {
-                let piece_a = BOARD.get_piece(row + direction, column + 1);
-                let piece_b = BOARD.get_piece(row + 2 * direction, column + 2);
-
-                if (piece_b == null && piece_a!.has_opposite_colour(this))
-                {
-                    return true
-                }
-            }
-            catch {}
-            try
-            {
-                let piece_a = BOARD.get_piece(row + direction, column - 1);
-                let piece_b = BOARD.get_piece(row + 2 * direction, column - 2);
-
-                if (piece_b == null && piece_a!.has_opposite_colour(this))
-                {
-                    return true
-                }
-            }
-            catch {};
+            return this.can_man_capture();
         }
         else
         {
-            try
-            {
-                let next_row = row;
-                let next_column = column;
-                while (true)
-                {
-                    next_row += 1;
-                    next_column += 1;
-                    let other_piece = BOARD.get_piece(next_row, next_column);
-
-
-                    if (other_piece == null)
-                    {
-                        continue;
-                    }
-                    else if (other_piece.has_opposite_colour(this) && BOARD.get_piece(next_row + 1, next_column + 1) == null)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            catch {}
-            try
-            {
-                let next_row = row;
-                let next_column = column;
-                while (true)
-                {
-                    next_row -= 1;
-                    next_column += 1;
-                    let other_piece = BOARD.get_piece(next_row, next_column);
-
-
-                    if (other_piece == null)
-                    {
-                        continue;
-                    }
-                    else if (other_piece.has_opposite_colour(this) && BOARD.get_piece(next_row - 1, next_column + 1) == null)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            catch {}
-            try
-            {
-                let next_row = row;
-                let next_column = column;
-                while (true)
-                {
-                    next_row += 1;
-                    next_column -= 1;
-                    let other_piece = BOARD.get_piece(next_row, next_column);
-
-
-                    if (other_piece == null)
-                    {
-                        continue;
-                    }
-                    else if (other_piece.has_opposite_colour(this) && BOARD.get_piece(next_row + 1, next_column - 1) == null)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            catch {}
-            try
-            {
-                let next_row = row;
-                let next_column = column;
-                while (true)
-                {
-                    next_row -= 1;
-                    next_column -= 1;
-                    let other_piece = BOARD.get_piece(next_row, next_column);
-
-
-                    if (other_piece == null)
-                    {
-                        continue;
-                    }
-                    else if (other_piece.has_opposite_colour(this) && BOARD.get_piece(next_row - 1, next_column - 1) == null)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            catch {}
+            return this.can_king_capture(captured_pieces);
         }
-        return false;
     }
 
     /* ----------------------------
