@@ -15,6 +15,20 @@ export enum EVALUATION
     edge_of_board = 8
 }
 
+/* -------------------------------------------------
+ * | Checks if the field specified by arguments    |
+ * | row and column is vacant (note: this function |
+ * | is important for dame capturing, because this |
+ * | is the only situation when piece can start    |
+ * | and end a move on the same square)            |
+ * -------------------------------------------------
+ */
+function is_field_vacant(piece: PIECE, row: number, column: number): boolean
+{
+    let other_piece = get_piece(row, column);
+    return (other_piece == null || piece == other_piece);
+}
+
 /* ------------------------------------------------
  * | Checks if the piece given as an argument     |
  * | will be threatened by enemy on the field     |
@@ -30,7 +44,7 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
 
     const direction = (piece.is_white) ? -1 : 1;
     
-    if ([null, piece].includes(get_piece(next_row - direction, next_column - 1)))
+    if (is_field_vacant(piece, next_row - direction, next_column - 1))
     {
         let r = next_row + direction;
         let c = next_column + 1;
@@ -54,13 +68,13 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
                 has_opposite_colour = other_piece?.has_opposite_colour(piece);
             }
 
-            while (has_opposite_colour == null || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
+            while (has_opposite_colour == undefined || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
             {
                 if (has_opposite_colour && !other_piece?.is_man)
                 {
                     return true;
                 }
-                else if (has_opposite_colour != null && !has_opposite_colour && other_piece != piece)
+                else if (has_opposite_colour != undefined && !has_opposite_colour && other_piece != piece)
                 {
                     second_piece = true;
                 }
@@ -77,7 +91,7 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
         catch {}
     }
 
-    if ([null, piece].includes(get_piece(next_row - direction, next_column + 1)))
+    if (is_field_vacant(piece, next_row - direction, next_column + 1))
     {
         let r = next_row + direction;
         let c = next_column - 1;
@@ -101,13 +115,13 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
                 has_opposite_colour = other_piece?.has_opposite_colour(piece);
             }
 
-            while (has_opposite_colour == null || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
+            while (has_opposite_colour == undefined || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
             {
                 if (has_opposite_colour && !other_piece?.is_man)
                 {
                     return true;
                 }
-                else if (has_opposite_colour != null &&!has_opposite_colour && piece != other_piece)
+                else if (has_opposite_colour != undefined &&!has_opposite_colour && piece != other_piece)
                 {
                     second_piece = true;
                 }
@@ -124,7 +138,7 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
         catch {}
     }
 
-    if ([null, piece].includes(get_piece(next_row + direction, next_column - 1)))
+    if (is_field_vacant(piece, next_row + direction, next_column - 1))
     {
         let r = next_row - direction;
         let c = next_column + 1;
@@ -142,13 +156,13 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
                 has_opposite_colour = other_piece?.has_opposite_colour(piece);
             }
 
-            while (has_opposite_colour == null || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
+            while (has_opposite_colour == undefined || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
             {
                 if (has_opposite_colour && !other_piece?.is_man)
                 {
                     return true;
                 }
-                else if (has_opposite_colour != null && !has_opposite_colour && piece != other_piece)
+                else if (has_opposite_colour != undefined && !has_opposite_colour && piece != other_piece)
                 {
                     second_piece = true;
                 }
@@ -165,7 +179,7 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
         catch {}
     }
 
-    if ([null, piece].includes(get_piece(next_row + direction, next_column + 1)))
+    if (is_field_vacant(piece, next_row + direction, next_column + 1))
     {
         let r = next_row - direction;
         let c = next_column - 1;
@@ -184,13 +198,13 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
                 has_opposite_colour = other_piece?.has_opposite_colour(piece);
             }
 
-            while (has_opposite_colour == null || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
+            while (has_opposite_colour == undefined || (!second_piece && !has_opposite_colour) || (has_opposite_colour && !other_piece?.is_man))
             {
                 if (has_opposite_colour && !other_piece?.is_man)
                 {
                     return true;
                 }
-                else if (has_opposite_colour != null &&!has_opposite_colour && piece != other_piece)
+                else if (has_opposite_colour != undefined &&!has_opposite_colour && piece != other_piece)
                 {
                     second_piece = true;
                 }
@@ -238,6 +252,8 @@ function end_of_move_evaluation(piece: PIECE, next_row: number, next_column: num
     return e;
 }
 
+let captured_pieces = Array<PIECE>(); // Stores all pieces which are going to be captured in this move.
+
 /* ----------------------------------
  * | Checks if the king given as an |
  * | argument is able to continue   |
@@ -254,20 +270,20 @@ function can_king_capture(piece: PIECE, row: number, column: number, row_directi
         {
             next_row += row_direction;
             next_column += column_direction;
-            let other_piece = get_piece(next_row, next_column);
 
-
-            if (other_piece == null)
+            if (is_field_vacant(piece, next_row, next_column))
             {
                 continue;
             }
-            else if (other_piece.has_opposite_colour(piece) && get_piece(next_row + row_direction, next_column + column_direction) == null)
+            
+            let other_piece = get_piece(next_row, next_column);
+            if (other_piece!.has_opposite_colour(piece) && !captured_pieces.includes(other_piece!))
             {
-                return true;
+                return is_field_vacant(piece, next_row + row_direction, next_column + column_direction);
             }
             else
             {
-                break;
+                return false;
             }
         }
     }
@@ -307,7 +323,7 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
         while (true)
         {
             let next_field = get_piece(next_row, next_column);
-            if (next_field == null)
+            if (is_field_vacant(piece, next_row, next_column))
             {
                 if (has_captured)
                 {
@@ -327,14 +343,14 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
                         yield* king_caputure_in_direction(piece, -row_direction as 1 | -1, column_direction, fields);
                         fields.pop();
                     }
-                    
+
                     if (!can_capture_1 && !can_capture_2)
                     {
                         move_queue.push(field);
                     }
                 }
             }
-            else if (next_field.has_opposite_colour(piece) && get_piece(next_row + row_direction, next_column + column_direction) == null)
+            else if (next_field!.has_opposite_colour(piece) && is_field_vacant(piece, next_row + row_direction, next_column + column_direction))
             {
                 if (has_captured)
                 {
@@ -347,6 +363,7 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
                 else
                 {
                     has_captured = true;
+                    captured_pieces.push(next_field!);
                 }
             }
             else
@@ -367,6 +384,7 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
         yield new MOVE(piece, Object.assign(fields), e);
         fields.pop();
     }
+    captured_pieces.pop();
 }
 
 /* ----------------------------------
@@ -437,7 +455,7 @@ export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = 
         }
     }
 
-    if (!can_jump)
+    if (!can_jump && fields.length > 0)
     {
         let e = end_of_move_evaluation(piece, fields[fields.length - 1].row, column);
         yield new MOVE(piece, Object.assign(fields), e);
