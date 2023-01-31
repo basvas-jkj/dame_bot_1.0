@@ -234,7 +234,7 @@ function black_square_clicked(this: HTMLElement): void
                     end_move();
                 }
             }
-            else if (clicked_field.piece!.can_capture() && clicked_field.piece!.row != 0 && clicked_field.piece!.row != 7)
+            else if (clicked_field.piece!.can_capture())
             {
                 original_field ??= previous_field;
                 actual_field = clicked_field;
@@ -242,6 +242,12 @@ function black_square_clicked(this: HTMLElement): void
                 unmark(previous_field!);
                 mark(clicked_field);
                 previous_field = clicked_field;
+
+                if (clicked_field.piece!.row != 0 && clicked_field.piece!.row != 7)
+                {
+                    end_move();
+                    return;
+                }
             }
             else
             {
