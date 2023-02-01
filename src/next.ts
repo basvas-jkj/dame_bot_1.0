@@ -1,5 +1,6 @@
-import {get_piece} from "./board";
-import {MOVE, FIELD} from "./move";
+import {get_piece, get_field} from "./board";
+import {MOVE} from "./move";
+import {FIELD} from "./field";
 import {PIECE} from "./piece";
 
 /* --------------------------------------------
@@ -252,7 +253,7 @@ function end_of_move_evaluation(piece: PIECE, next_row: number, next_column: num
     return e;
 }
 
-let captured_pieces = Array<PIECE>(); // Stores all pieces which are going to be captured in this move.
+let captured_pieces = new Array<PIECE>(); // Stores all pieces which are going to be captured in this move.
 
 /* ----------------------------------
  * | Checks if the king given as an |
@@ -327,7 +328,7 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
             {
                 if (has_captured)
                 {
-                    const field: FIELD = {row: next_row, column: next_column};
+                    const field = get_field(next_row, next_column);
                     let can_capture_1 = can_king_capture(piece, next_row, next_column, row_direction, -column_direction as 1 | -1);
                     let can_capture_2 = can_king_capture(piece, next_row, next_column, -row_direction as 1 | -1, column_direction);
                     
@@ -354,7 +355,7 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
             {
                 if (has_captured)
                 {
-                    fields.push({row: next_row - row_direction, column: next_column - column_direction});
+                    fields.push(get_field(next_row - row_direction, next_column - column_direction));
                     yield* king_caputure_in_direction(piece, row_direction, column_direction, fields);
                     fields.pop();
                     move_queue = [];
@@ -381,7 +382,7 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
     {
         let e = end_of_move_evaluation(piece, move.row, move.column);
         fields.push(move);
-        yield new MOVE(piece, Object.assign(fields), e);
+        yield new MOVE(piece, fields[fields.length - 1], e, Object.assign([], captured_pieces));
         fields.pop();
     }
     captured_pieces.pop();
@@ -437,9 +438,11 @@ export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = 
         if (jumped_field?.has_opposite_colour(piece) && next_field == null)
         {
             can_jump = true;
-            fields.push({row: next_row, column: column + 2});
+            captured_pieces.push(jumped_field);
+            fields.push(get_field(next_row, column + 2));
             yield* man_capture(piece, direction, fields);
             fields.pop();
+            captured_pieces.pop();
         }
     }
     if (column > 1 && next_row >= 0 && next_row <= 7)
@@ -449,16 +452,18 @@ export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = 
         if (jumped_field?.has_opposite_colour(piece) && next_field == null)
         {
             can_jump = true;
-            fields.push({row: next_row, column: column - 2});
+            captured_pieces.push(jumped_field);
+            fields.push(get_field(next_row, column - 2));
             yield* man_capture(piece, direction, fields);
             fields.pop();
+            captured_pieces.pop();
         }
     }
 
     if (!can_jump && fields.length > 0)
     {
         let e = end_of_move_evaluation(piece, fields[fields.length - 1].row, column);
-        yield new MOVE(piece, Object.assign(fields), e);
+        yield new MOVE(piece, fields[fields.length - 1], e, Object.assign([], captured_pieces));
     }
 }
 
@@ -479,8 +484,8 @@ export function* man_move(piece: PIECE, direction: 1 | -1): Generator<MOVE, void
         if (next_field == null)
         {
             let e = end_of_move_evaluation(piece, next_row, column + 1);
-            let field: FIELD = {row: next_row, column: column + 1};
-            yield new MOVE(piece, [field], e);
+            let field = get_field(next_row, column + 1);
+            yield new MOVE(piece, field, e);
         }
     }
     if (column > 0)
@@ -489,8 +494,8 @@ export function* man_move(piece: PIECE, direction: 1 | -1): Generator<MOVE, void
         if (next_field == null)
         {
             let e = end_of_move_evaluation(piece, next_row, column - 1);
-            let field: FIELD = {row: next_row, column: column - 1};
-            yield new MOVE(piece, [field], e);
+            let field = get_field(next_row, column - 1);
+            yield new MOVE(piece, field, e);
         }
     }
 }
@@ -515,8 +520,8 @@ export function *king_move(piece: PIECE): Generator<MOVE, void, void>
         if (next_field == null)
         {
             let e = end_of_move_evaluation(piece, next_row, next_column);
-            let field: FIELD = {row: next_row, column: next_column};
-            yield new MOVE(piece, [field], e);
+            let field = get_field(next_row, next_column);
+            yield new MOVE(piece, field, e);
         }
         else
         {
@@ -535,8 +540,8 @@ export function *king_move(piece: PIECE): Generator<MOVE, void, void>
         if (next_field == null)
         {
             let e = end_of_move_evaluation(piece, next_row, next_column);
-            let field: FIELD = {row: next_row, column: next_column};
-            yield new MOVE(piece, [field], e);
+            let field = get_field(next_row, next_column);
+            yield new MOVE(piece, field, e);
         }
         else
         {
@@ -555,8 +560,8 @@ export function *king_move(piece: PIECE): Generator<MOVE, void, void>
         if (next_field == null)
         {
             let e = end_of_move_evaluation(piece, next_row, next_column);
-            let field: FIELD = {row: next_row, column: next_column};
-            yield new MOVE(piece, [field], e);
+            let field = get_field(next_row, next_column);
+            yield new MOVE(piece, field, e);
         }
         else
         {
@@ -575,8 +580,8 @@ export function *king_move(piece: PIECE): Generator<MOVE, void, void>
         if (next_field == null)
         {
             let e = end_of_move_evaluation(piece, next_row, next_column);
-            let field: FIELD = {row: next_row, column: next_column};
-            yield new MOVE(piece, [field], e);
+            let field = get_field(next_row, next_column);
+            yield new MOVE(piece, field, e);
         }
         else
         {

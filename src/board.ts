@@ -1,10 +1,9 @@
 import * as $ from "jquery";
 
 import {PLAYER} from "./player";
+import {SQUARE, FIELD} from "./field"
 import {PIECE, PIECE_TYPE} from "./piece";
 
-type SQUARE = JQuery<HTMLElement>;
-type FIELD = {square: SQUARE, piece: PIECE | null}
 let fields: FIELD[][]; // rows × collums
 
 
@@ -12,24 +11,19 @@ let fields: FIELD[][]; // rows × collums
 //  |                               helping functions                               |
 //  ---------------------------------------------------------------------------------
 
-/* --------------------------
- * | Returns the row number |
- * | of the square.         |
- * --------------------------
+/* ------------------------------
+ * | Returns field specified by |
+ * | arguments row and column.  |
+ * ------------------------------
  */
-function row_of_square(square: SQUARE): number
+export function get_field(row: number, column: number): FIELD
 {
-    return Number.parseInt(square.attr("id")![0]);
+    if (row < 0 || row > 7 || column < 0 || column > 7)
+    {
+        throw new Error();
 }
 
-/* -------------------------
- * | Returns the column    |
- * | number of the square. |
- * -------------------------
- */
-function column_of_square(square: SQUARE): number
-{
-    return Number.parseInt(square.attr("id")![1]);
+    return fields[row][column];
 }
 
 /* --------------------------------
@@ -39,8 +33,8 @@ function column_of_square(square: SQUARE): number
  */
 function square_to_field(square: SQUARE): FIELD
 {
-    let row = row_of_square(square);
-    let column = column_of_square(square);
+    let row = FIELD.row_of_square(square);
+    let column = FIELD.column_of_square(square);
     return fields[row][column];
 }
 
@@ -70,10 +64,10 @@ function unmark(field: FIELD): void
  * | position in the piece object.  |
  * ----------------------------------
  */
-function move_piece(previous: FIELD, next: FIELD): void
+export function move_piece(previous: FIELD, next: FIELD): void
 {
-    const next_row = row_of_square(next.square);
-    const next_column = column_of_square(next.square);
+    const next_row = next.row;
+    const next_column = next.column;
 
     previous.piece!.move(next_row, next_column);
 
@@ -108,8 +102,8 @@ enum MOVE_TYPE
  */
 function check_move(from: FIELD, to: FIELD): MOVE_TYPE
 {
-    const next_row = row_of_square(to.square);
-    const next_column = column_of_square(to.square);
+    const next_row = to.row;
+    const next_column = to.column;
 
     if (original_field != null || PLAYER.can_capture())
     {
@@ -344,7 +338,7 @@ export function create(): void
             square.attr("height", 100);
             square.addClass(((i + j) % 2 == 1) ? "black" : "white");
             row.append(square);
-            fields[i][j] = {square: square, piece: null};
+            fields[i][j] = new FIELD(square);
         }
         $("#board").append(row);
     }

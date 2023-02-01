@@ -1,23 +1,30 @@
 import {PIECE} from "./piece";
+import {FIELD} from "./field";
+import {get_field} from "./board";
 import {EVALUATION} from "./next";
-
-export type FIELD =
-{
-    readonly row: number;
-    readonly column: number;
-}
 
 export class MOVE
 {
-    private piece: PIECE;
-    private fields: FIELD[];
-    private evaluation: EVALUATION;
+    readonly from: FIELD;
+    readonly to: FIELD;
+    readonly evaluation: EVALUATION;
+    readonly captured_pieces: PIECE[];
+    readonly value_of_captured_pieces: number;
+    readonly piece: PIECE;
 
-    constructor(piece: PIECE, fields: FIELD[], evaluation: EVALUATION)
+    constructor(piece: PIECE, last_field: FIELD, evaluation: EVALUATION, captured_pieces: PIECE[] = [])
     {
-        this.piece = piece;
-        this.fields = fields;
+        this.from = get_field(piece.row, piece.column);
+        this.to = last_field;
         this.evaluation = evaluation;
+        this.captured_pieces = captured_pieces;
+        this.piece = piece;
+
+        this.value_of_captured_pieces = 0;
+        for (let piece of captured_pieces)
+        {
+            this.value_of_captured_pieces += (piece.is_man) ? 1 : 3;
+        }
     }
 
     field_to_string(row: number, column: number): string
@@ -27,12 +34,9 @@ export class MOVE
 
     to_string(): string
     {
-        let string = `${this.piece.type}: ${this.field_to_string(this.piece.row, this.piece.column)}`;
-        for (let field of this.fields)
-        {
-            string += ` > ${this.field_to_string(field.row, field.column)}`
-        }
-
-        return string + ` (${this.evaluation})`;
+        return this.piece.type + " " +
+            this.field_to_string(this.from.row, this.from.column)
+           + " > " + 
+           this.field_to_string(this.to.row, this.to.column);
     }
 }
