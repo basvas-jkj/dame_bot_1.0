@@ -10,10 +10,12 @@ import {PIECE} from "./piece";
  */
 export enum EVALUATION
 {
-    is_threatened = 1,
-    will_be_threatened = 2,
-    promotion= 4,
-    edge_of_board = 8
+    man_move = 1,
+    wont_be_threatened = 2,
+    edge_of_board = 4,
+    promotion = 8,
+    man_escape = 16,
+    dame_escape = 32
 }
 
 /* -------------------------------------------------
@@ -234,22 +236,43 @@ function will_be_threatened(piece: PIECE, next_row: number, next_column: number)
 function end_of_move_evaluation(piece: PIECE, next_row: number, next_column: number): EVALUATION
 {
     let e: EVALUATION = 0;
-    if ((next_row == 0 || next_row == 7) && piece.is_man)
+    if (piece.is_threatened())
+    {
+        if (!will_be_threatened(piece, next_row, next_column))
+        {
+            if (!piece.is_man || (next_row == 0 || next_row == 7))
+            {
+                // I consider the piece which can be promoted at the end of move to be the same strong as a king.
+                e |= EVALUATION.dame_escape;
+            }
+            else
+            {
+                e |= EVALUATION.man_escape;
+            }
+
+            if (next_column == 0 || next_column == 7 || next_row == 0 || next_row == 7)
+            {
+                e |= EVALUATION.edge_of_board;
+            }
+        }
+    }
+    else if ((next_row == 0 || next_row == 7) && piece.is_man)
     {
         e |= EVALUATION.promotion;
     }
-    if (next_column == 0 || next_column == 7 || next_row == 0 || next_row == 7)
+    else if (next_column == 0 || next_column == 7 || next_row == 0 || next_row == 7)
     {
         e |= EVALUATION.edge_of_board;
     }
-    if (piece.is_threatened())
+    else if (!will_be_threatened(piece, next_row, next_column))
     {
-        e |= EVALUATION.is_threatened;
+        e |= EVALUATION.wont_be_threatened;
     }
-    if (will_be_threatened(piece, next_row, next_column))
+    else if (piece.is_man)
     {
-        e |= EVALUATION.will_be_threatened;
+        e |= EVALUATION.man_move;
     }
+    
     return e;
 }
 

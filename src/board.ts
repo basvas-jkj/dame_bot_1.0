@@ -21,7 +21,7 @@ export function get_field(row: number, column: number): FIELD
     if (row < 0 || row > 7 || column < 0 || column > 7)
     {
         throw new Error();
-}
+    }
 
     return fields[row][column];
 }
@@ -204,6 +204,10 @@ function black_square_clicked(this: HTMLElement): void
         if (move_state == MOVE_TYPE.possible)
         {
             move_piece(previous_field!, clicked_field);
+            if (clicked_field.piece!.can_be_promoted())
+            {
+                clicked_field.piece!.promote();
+            }
             end_move();
         }
         else if (move_state == MOVE_TYPE.capturing)
@@ -236,15 +240,13 @@ function black_square_clicked(this: HTMLElement): void
                 unmark(previous_field!);
                 mark(clicked_field);
                 previous_field = clicked_field;
-
-                if (clicked_field.piece!.row != 0 && clicked_field.piece!.row != 7)
-                {
-                    end_move();
-                    return;
-                }
             }
             else
             {
+                if (clicked_field.piece!.can_be_promoted())
+                {
+                    clicked_field.piece!.promote();
+                }
                 end_move();
             }
         }

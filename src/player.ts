@@ -1,5 +1,6 @@
 import * as $ from "jquery";
 import * as NEXT from "./next";
+import * as BOARD from "./board";
 import * as starting_position from "./starting_position.json";
 
 import {MOVE} from "./move";
@@ -22,9 +23,9 @@ export class PLAYER
      */
     static prepare(): void
     {
-        PLAYER.white = new PLAYER("white", true);
+        PLAYER.white = new PLAYER("white", false);
         PLAYER.black = new PLAYER("black", true);
-
+        
         if (starting_position.player_on_move == "white")
         {
             PLAYER.player_on_move = PLAYER.white;
@@ -154,6 +155,26 @@ export class PLAYER
         return false;
     }
 
+    /* -------------------------
+     * | Performs the move     |
+     * | given as an argument. |
+     * -------------------------
+     */
+    private perform_move(move: MOVE): void
+    {
+        BOARD.move_piece(move.from, move.to);
+        for (let piece of move.captured_pieces)
+        {
+            BOARD.remove_piece(piece);
+        }
+
+        if (move.piece.can_be_promoted())
+        {
+            move.piece.promote();
+        }
+        PLAYER.switch_players();
+    }
+
     /* --------------------------------
      * | Evaluates all possible moves |
      * | and chooses the best option. |
@@ -162,52 +183,56 @@ export class PLAYER
     private play(): void
     {
         let can_capture = this.can_capture();
-        let number_of_threatened_men = 0;
-        let number_of_threatened_kings = 0;
-        for (const piece of this.pieces)
-        {
-            if (piece.is_threatened())
-            {
-                (piece.is_man) ? number_of_threatened_men += 1 : number_of_threatened_kings += 1;
-            }
-        }
-        console.clear();
-        console.log("Počet ohrožených kamenů: %d", number_of_threatened_men);
-        console.log("Počet ohrožených dam: %d", number_of_threatened_kings);
-        console.log((can_capture) ? "Hráč může brát." : "Hráč nemůže brát.");
 
+        let chosen_moves = new Array<MOVE>();
+        let max_evaluation: NEXT.EVALUATION = 0;
+        let max_value_of_captured_pieces = 0;
         for (const piece of this.pieces)
         {
-            let gen: Generator<MOVE, void, void>;
+            let generator: Generator<MOVE, void, void>;
             if (piece.is_man)
             {
                 if (can_capture)
                 {
-                    gen = NEXT.man_capture(piece, this.direction);
+                    generator = NEXT.man_capture(piece, this.direction);
                 }
                 else
                 {
-                    gen = NEXT.man_move(piece, this.direction);
+                    generator = NEXT.man_move(piece, this.direction);
                 }
             }
             else
             {
                 if (can_capture)
                 {
-                    gen = NEXT.king_capture(piece);
+                    generator = NEXT.king_capture(piece);
                 }
                 else
                 {
-                    gen = NEXT.king_move(piece);
+                    generator = NEXT.king_move(piece);
                 }
-            }
+            }     
 
-            let move = gen.next().value as MOVE;
+            let move = generator.next().value as MOVE;
+
             while (move != null)
             {
-                console.log(move.to_string());
-                move = gen.next().value as MOVE;
+                if (move.evaluation > max_evaluation || move.value_of_captured_pieces > max_value_of_captured_pieces)
+                {
+                    max_evaluation = move.evaluation;
+                    max_value_of_captured_pieces = move.value_of_captured_pieces;
+                    chosen_moves = [move];
+                }
+                else if (move.evaluation == max_evaluation && move.value_of_captured_pieces == max_value_of_captured_pieces)
+                {
+                    chosen_moves.push(move);
+                }
+                move = generator.next().value as MOVE;
             }
         }
+
+        let random_number = Math.floor(Math.random() * chosen_moves.length); // random number between zero and chosen_moves.length - 1
+        console.log(chosen_moves[random_number].to_string());
+        this.perform_move(chosen_moves[random_number]);
     }
 }

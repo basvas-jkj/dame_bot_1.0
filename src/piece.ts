@@ -101,18 +101,10 @@ export class PIECE
             }
             else if (next_column == this.column + 2)
             {
-                if (next_row == 0)
-                {
-                    this._type = PIECE_TYPE.white_king;
-                }
                 return BOARD.get_piece(this.row - 1, this.column + 1);
             }
             else if (next_column == this.column - 2)
             {
-                if (next_row == 0)
-                {
-                    this._type = PIECE_TYPE.white_king;
-                }
                 return BOARD.get_piece(this.row - 1, this.column - 1);
             }
             else
@@ -184,6 +176,38 @@ export class PIECE
         }
     }
 
+    /* -----------------------------------------
+     * | Checks if this piece can be promoted  |
+     * | to king (i.e. if it is a man standing |
+     * | on the first or last layer).          |
+     * -----------------------------------------
+     */
+    can_be_promoted(): boolean
+    {
+        return ((this.row == 0 && this.type == PIECE_TYPE.white_man) || (this.row == 7 && this.type == PIECE_TYPE.black_man));
+    }
+
+    /* ------------------------------------------------
+     * | Promotes this man to a king of corresponding |
+     * | colour. (change the type of piece in this    |
+     * | class and on the gameboard)                  |
+     * ------------------------------------------------
+     */
+    promote(): void
+    {
+        if (this.type == PIECE_TYPE.white_man)
+        {
+            this._type = PIECE_TYPE.white_king;
+        }
+        else if (this.type == PIECE_TYPE.black_man)
+        {
+            this._type = PIECE_TYPE.black_king;
+        }
+
+        let field = BOARD.get_field(this.row, this.column);
+        field.square.html(this.type);
+    }
+
     /* -------------------------
      * | Checks if the ongoing |
      * | move is possible.     |
@@ -196,22 +220,12 @@ export class PIECE
             let valid_row = (next_row == this.row - 1);
             let valid_collumn = (next_column == this.column + 1 || next_column == this.column - 1)
 
-            if (next_row == 0)
-            {
-                this._type = PIECE_TYPE.white_king;
-            }
-
             return (valid_row && valid_collumn);
         }
         else if (this.type == PIECE_TYPE.black_man)
         {
             let valid_row = (next_row == this.row + 1);
             let valid_collumn = (next_column == this.column + 1 || next_column == this.column - 1)
-
-            if (next_row == 7)
-            {
-                this._type = PIECE_TYPE.black_king;
-            }
 
             return (valid_row && valid_collumn);
         }
