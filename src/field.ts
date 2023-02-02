@@ -37,4 +37,14 @@ export class FIELD
 
         this.piece = null;
     }
+
+    /* ---------------------------------
+     * | Returns string representation |
+     * | of this field.                |
+     * ---------------------------------
+     */
+    to_string(): string
+    {
+        return `${String.fromCharCode("a".charCodeAt(0) + this.column)}${8 - this.row}`
+    }
 }

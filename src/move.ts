@@ -5,17 +5,24 @@ import {EVALUATION} from "./next";
 
 export class MOVE
 {
-    readonly from: FIELD;
-    readonly to: FIELD;
+    readonly fields: FIELD[];
     readonly evaluation: EVALUATION;
     readonly captured_pieces: PIECE[];
     readonly value_of_captured_pieces: number;
     readonly piece: PIECE;
 
-    constructor(piece: PIECE, last_field: FIELD, evaluation: EVALUATION, captured_pieces: PIECE[] = [])
+    get from(): FIELD
     {
-        this.from = get_field(piece.row, piece.column);
-        this.to = last_field;
+        return get_field(this.piece.row, this.piece.column);
+    }
+    get to(): FIELD
+    {
+        return this.fields[this.fields.length - 1];
+    }
+
+    constructor(piece: PIECE, fields: FIELD[], evaluation: EVALUATION, captured_pieces: PIECE[] = [])
+    {
+        this.fields = fields;
         this.evaluation = evaluation;
         this.captured_pieces = captured_pieces;
         this.piece = piece;
@@ -27,16 +34,46 @@ export class MOVE
         }
     }
 
-    field_to_string(row: number, column: number): string
+    /* -------------------------------------
+     * | Marks all fields which are part   |
+     * | of the move the bot wants to make.|
+     * -------------------------------------
+     */
+    mark(): void
     {
-        return `${String.fromCharCode("a".charCodeAt(0) + column)}${8 - row}`
+        this.from.square.css("background-color", "rgb(0, 255, 255)");
+        for (let field of this.fields)
+        {
+            field.square.css("background-color", "rgb(0, 255, 255)");
+        }
     }
 
+    /* -------------------------------------
+     * | Unmarks all fields which are part |
+     * | of the move the bot wants to make.|
+     * -------------------------------------
+     */
+    unmark(): void
+    {
+        this.from.square.css("background-color", "rgb(0, 0, 0)");
+        for (let field of this.fields)
+        {
+            field.square.css("background-color", "rgb(0, 0, 0)");
+        }
+    }
+
+    /* ---------------------------------
+     * | Returns string representation |
+     * | of this move.                 |
+     * ---------------------------------
+     */
     to_string(): string
     {
-        return this.piece.type + " " +
-            this.field_to_string(this.from.row, this.from.column)
-           + " > " + 
-           this.field_to_string(this.to.row, this.to.column);
+        let string: string = this.piece.type + ": " + this.from.to_string();
+        for (let field of this.fields)
+        {
+            string += " > " + field.to_string();
+        }
+        return string;
     }
 }

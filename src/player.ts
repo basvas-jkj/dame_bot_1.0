@@ -230,7 +230,7 @@ export class PLAYER
      * | and chooses the best option. |
      * --------------------------------
      */
-    private play(): void
+    private choose_move(): MOVE | null
     {
         let can_capture = this.can_capture();
 
@@ -291,12 +291,38 @@ export class PLAYER
             {
                 $("p").html("<b>Black wins.</b>");
             }
+            return null;
         }
         else
         {
             let random_number = Math.floor(Math.random() * chosen_moves.length); // random number between zero and chosen_moves.length - 1
             console.log(chosen_moves[random_number].to_string());
-            this.perform_move(chosen_moves[random_number]);
+            return chosen_moves[random_number];
+        }
+    }
+    
+    /* -----------------------------------------------
+     * | Chooses next move, waits 1,5 seconds, marks |
+     * | the move on gameboard, waits 3 seconds,     |
+     * | unmarks the move and performs it.           |
+     * -----------------------------------------------
+     */
+    private play(): void
+    {
+        let move = this.choose_move();
+        if (move != null)
+        {
+            setTimeout(() =>
+            {
+                move!.mark();
+                setTimeout(() =>
+                {
+                    move!.unmark();
+                    this.perform_move(move!);
+                },
+                3000)
+            },
+            1500)
         }
     }
 }

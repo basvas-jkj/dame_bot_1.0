@@ -404,7 +404,7 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
     {
         let e = end_of_move_evaluation(piece, move.row, move.column);
         fields.push(move);
-        yield new MOVE(piece, fields[fields.length - 1], e, Object.assign([], captured_pieces));
+        yield new MOVE(piece, Object.assign([], fields), e, Object.assign([], captured_pieces));
         fields.pop();
     }
     captured_pieces.pop();
@@ -485,7 +485,7 @@ export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = 
     if (!can_jump && fields.length > 0)
     {
         let e = end_of_move_evaluation(piece, fields[fields.length - 1].row, column);
-        yield new MOVE(piece, fields[fields.length - 1], e, Object.assign([], captured_pieces));
+        yield new MOVE(piece, Object.assign([], fields), e, Object.assign([], captured_pieces));
     }
 }
 
@@ -507,7 +507,7 @@ export function* man_move(piece: PIECE, direction: 1 | -1): Generator<MOVE, void
         {
             let e = end_of_move_evaluation(piece, next_row, column + 1);
             let field = get_field(next_row, column + 1);
-            yield new MOVE(piece, field, e);
+            yield new MOVE(piece, [field], e);
         }
     }
     if (column > 0)
@@ -517,7 +517,7 @@ export function* man_move(piece: PIECE, direction: 1 | -1): Generator<MOVE, void
         {
             let e = end_of_move_evaluation(piece, next_row, column - 1);
             let field = get_field(next_row, column - 1);
-            yield new MOVE(piece, field, e);
+            yield new MOVE(piece, [field], e);
         }
     }
 }
@@ -543,7 +543,7 @@ export function *king_move(piece: PIECE): Generator<MOVE, void, void>
         {
             let e = end_of_move_evaluation(piece, next_row, next_column);
             let field = get_field(next_row, next_column);
-            yield new MOVE(piece, field, e);
+            yield new MOVE(piece, [field], e);
         }
         else
         {
@@ -563,7 +563,7 @@ export function *king_move(piece: PIECE): Generator<MOVE, void, void>
         {
             let e = end_of_move_evaluation(piece, next_row, next_column);
             let field = get_field(next_row, next_column);
-            yield new MOVE(piece, field, e);
+            yield new MOVE(piece, [field], e);
         }
         else
         {
@@ -583,7 +583,7 @@ export function *king_move(piece: PIECE): Generator<MOVE, void, void>
         {
             let e = end_of_move_evaluation(piece, next_row, next_column);
             let field = get_field(next_row, next_column);
-            yield new MOVE(piece, field, e);
+            yield new MOVE(piece, [field], e);
         }
         else
         {
@@ -603,7 +603,7 @@ export function *king_move(piece: PIECE): Generator<MOVE, void, void>
         {
             let e = end_of_move_evaluation(piece, next_row, next_column);
             let field = get_field(next_row, next_column);
-            yield new MOVE(piece, field, e);
+            yield new MOVE(piece, [field], e);
         }
         else
         {
