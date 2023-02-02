@@ -1,9 +1,9 @@
 import * as BOARD from "./board";
 
-import  "./svg/white_man.svg";
-import "./svg/black_man.svg";
-import "./svg/white_king.svg";
-import "./svg/black_king.svg";
+import  "../svg/white_man.svg";
+import "../svg/black_man.svg";
+import "../svg/white_king.svg";
+import "../svg/black_king.svg";
 
 /* ---------------------------------
  * | Represents the type of piece. |
