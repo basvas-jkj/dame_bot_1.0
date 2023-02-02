@@ -2,7 +2,7 @@ import * as $ from "jquery";
 
 import {PLAYER} from "./player";
 import {SQUARE, FIELD} from "./field"
-import {PIECE, PIECE_TYPE} from "./piece";
+import {PIECE} from "./piece";
 
 let fields: FIELD[][]; // rows × collums
 
@@ -45,7 +45,7 @@ function square_to_field(square: SQUARE): FIELD
  */
 function mark(field: FIELD): void
 {
-    field.square.css("color", "rgb(255, 0, 0)");
+    field.square.css("background-color", "rgb(255, 0, 0)");
 }
 
 /* ----------------------------------
@@ -55,7 +55,7 @@ function mark(field: FIELD): void
  */
 function unmark(field: FIELD): void
 {
-    field?.square.css("color", "rgb(255, 255, 255)");
+    field?.square.css("background-color", "rgb(172, 113, 30)");
 }
 
 /* ----------------------------------
@@ -74,7 +74,7 @@ export function move_piece(previous: FIELD, next: FIELD): void
     next.piece = previous.piece;
     previous.piece = null;
     previous.square.html("");
-    next.square.html(next.piece!.type);
+    next.square.html(next.piece!.svg);
 }
 
 
@@ -251,7 +251,7 @@ function black_square_clicked(this: HTMLElement): void
             }
         }
     }
-    else if (PLAYER.is_players_piece(clicked_field.piece!.type))
+    else if (PLAYER.is_players_piece(clicked_field.piece!.type) && !PLAYER.is_automatic())
     {
         if (moving)
         {
@@ -312,7 +312,7 @@ export function remove_piece(piece: PIECE): void
 export function place_piece(piece: PIECE): void
 {
     let field = fields[piece.row][piece.column]
-    field.square.html(piece.type);
+    field.square.html(piece.svg);
     field.piece = piece;
 }
 

@@ -1,5 +1,10 @@
 import * as BOARD from "./board";
 
+import  "./svg/white_man.svg";
+import "./svg/black_man.svg";
+import "./svg/white_king.svg";
+import "./svg/black_king.svg";
+
 /* ---------------------------------
  * | Represents the type of piece. |
  * ---------------------------------
@@ -52,6 +57,28 @@ export class PIECE
     get is_white(): boolean
     {
         return (this.type == PIECE_TYPE.white_man || this.type == PIECE_TYPE.white_king);
+    }
+
+    /* ------------------------------------
+     * | Returns graphical representation |
+     * | of this piece in format svg.     |
+     * ------------------------------------
+     */
+    get svg(): string
+    {
+        switch (this.type)
+        {
+            case PIECE_TYPE.white_man:
+                return "<img src='./svg/white_man.svg'>";
+            case PIECE_TYPE.black_man:
+                return "<img src='./svg/black_man.svg'>";
+            case PIECE_TYPE.white_king:
+                return "<img src='./svg/white_king.svg'>";
+            case PIECE_TYPE.black_king:
+                return "<img src='./svg/black_king.svg'>";
+            default:
+                throw new Error("Unsupported type.");
+        }
     }
 
     /* -------------------------------
@@ -205,7 +232,7 @@ export class PIECE
         }
 
         let field = BOARD.get_field(this.row, this.column);
-        field.square.html(this.type);
+        field.square.html(this.svg);
     }
 
     /* -------------------------

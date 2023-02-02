@@ -43,6 +43,16 @@ export class PLAYER
         }
     }
 
+    /* ----------------------------
+     * | Returns if the player on |
+     * | the move is automatic.   |
+     * ----------------------------
+     */
+    static is_automatic(): boolean
+    {
+        return this.player_on_move.automatic;
+    }
+
     /* -------------------------------------
      * | Checks if the piece passed as     |
      * | an argument belongs to the player |

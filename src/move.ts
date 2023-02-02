@@ -55,10 +55,10 @@ export class MOVE
      */
     unmark(): void
     {
-        this.from.square.css("background-color", "rgb(0, 0, 0)");
+        this.from.square.css("background-color", "rgb(172, 113, 30)");
         for (let field of this.fields)
         {
-            field.square.css("background-color", "rgb(0, 0, 0)");
+            field.square.css("background-color", "rgb(172, 113, 30)");
         }
     }
 

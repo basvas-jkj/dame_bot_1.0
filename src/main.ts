@@ -12,6 +12,7 @@ function ready(): void
 {
     BOARD.create();
     PLAYER.prepare();
+    $("#new_game").click(() => {location.reload()});
 }
 
 $(ready);

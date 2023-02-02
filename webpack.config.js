@@ -10,7 +10,8 @@ module.exports =
     output:
     {
         path: path.resolve(__dirname, "dist"),
-        filename: "script.js"
+        filename: "script.js",
+        assetModuleFilename: "svg/[name][ext]"
     },
     module:
     {
@@ -27,6 +28,10 @@ module.exports =
             {
                 test: /\.ts$/,
                 loader: "ts-loader"
+            },
+            {
+                test: /\.svg$/,
+                type: "asset/resource"
             }
         ]
     },
