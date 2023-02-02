@@ -101,6 +101,56 @@ export class PLAYER
         {
             PLAYER.player_on_move.play();
         }
+        else
+        {
+            let found_move = false;
+            let can_capture = PLAYER.player_on_move.can_capture();
+            for (const piece of PLAYER.player_on_move.pieces)
+            {
+                let generator: Generator<MOVE, void, void>;
+                if (piece.is_man)
+                {
+                    if (can_capture)
+                    {
+                        generator = NEXT.man_capture(piece, PLAYER.player_on_move.direction);
+                    }
+                    else
+                    {
+                        generator = NEXT.man_move(piece, PLAYER.player_on_move.direction);
+                    }
+                }
+                else
+                {
+                    if (can_capture)
+                    {
+                        generator = NEXT.king_capture(piece);
+                    }
+                    else
+                    {
+                        generator = NEXT.king_move(piece);
+                    }
+                }
+
+                let move = generator.next().value as MOVE;
+
+                if (move != null)
+                {
+                    found_move = true;
+                    break;
+                }
+            }
+            if (!found_move)
+            {
+                if (PLAYER.player_on_move.direction == 1)
+                {
+                    $("p").html("<b>White wins.</b>");
+                }
+                else
+                {
+                    $("p").html("<b>Black wins.</b>");
+                }
+            }
+        }
     }
 
     /* ------------------------------
@@ -231,8 +281,22 @@ export class PLAYER
             }
         }
 
-        let random_number = Math.floor(Math.random() * chosen_moves.length); // random number between zero and chosen_moves.length - 1
-        console.log(chosen_moves[random_number].to_string());
-        this.perform_move(chosen_moves[random_number]);
+        if (chosen_moves.length == 0)
+        {
+            if (this.direction == 1)
+            {
+                $("p").html("<b>White wins.</b>");
+            }
+            else
+            {
+                $("p").html("<b>Black wins.</b>");
+            }
+        }
+        else
+        {
+            let random_number = Math.floor(Math.random() * chosen_moves.length); // random number between zero and chosen_moves.length - 1
+            console.log(chosen_moves[random_number].to_string());
+            this.perform_move(chosen_moves[random_number]);
+        }
     }
 }

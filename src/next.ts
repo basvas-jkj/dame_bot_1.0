@@ -276,7 +276,6 @@ function end_of_move_evaluation(piece: PIECE, next_row: number, next_column: num
     return e;
 }
 
-let captured_pieces = new Array<PIECE>(); // Stores all pieces which are going to be captured in this move.
 
 /* ----------------------------------
  * | Checks if the king given as an |
@@ -284,7 +283,7 @@ let captured_pieces = new Array<PIECE>(); // Stores all pieces which are going t
  * | in move with another jump.     |
  * ----------------------------------
  */
-function can_king_capture(piece: PIECE, row: number, column: number, row_direction: 1 | -1, column_direction: 1 | -1): boolean
+function can_king_capture(piece: PIECE, row: number, column: number, row_direction: 1 | -1, column_direction: 1 | -1, captured_pieces: PIECE[]): boolean
 {
     try
     {
@@ -322,7 +321,7 @@ function can_king_capture(piece: PIECE, row: number, column: number, row_directi
  * | row_direction and column_direction       |
  * --------------------------------------------
  */
-function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column_direction: 1 | -1, fields: FIELD[] = []): Generator<MOVE, void, void>
+function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column_direction: 1 | -1, fields: FIELD[] = [], captured_pieces: PIECE[] = []): Generator<MOVE, void, void>
 {
     let row: number;
     let column: number;
@@ -352,19 +351,19 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
                 if (has_captured)
                 {
                     const field = get_field(next_row, next_column);
-                    let can_capture_1 = can_king_capture(piece, next_row, next_column, row_direction, -column_direction as 1 | -1);
-                    let can_capture_2 = can_king_capture(piece, next_row, next_column, -row_direction as 1 | -1, column_direction);
+                    let can_capture_1 = can_king_capture(piece, next_row, next_column, row_direction, -column_direction as 1 | -1, captured_pieces);
+                    let can_capture_2 = can_king_capture(piece, next_row, next_column, -row_direction as 1 | -1, column_direction, captured_pieces);
                     
                     if (can_capture_1)
                     {
                         fields.push(field);
-                        yield* king_caputure_in_direction(piece, row_direction, -column_direction as 1 | -1, fields);
+                        yield* king_caputure_in_direction(piece, row_direction, -column_direction as 1 | -1, fields, captured_pieces);
                         fields.pop();
                     }
                     if (can_capture_2)
                     {
                         fields.push(field);
-                        yield* king_caputure_in_direction(piece, -row_direction as 1 | -1, column_direction, fields);
+                        yield* king_caputure_in_direction(piece, -row_direction as 1 | -1, column_direction, fields, captured_pieces);
                         fields.pop();
                     }
 
@@ -379,7 +378,7 @@ function *king_caputure_in_direction(piece: PIECE, row_direction: 1 | -1, column
                 if (has_captured)
                 {
                     fields.push(get_field(next_row - row_direction, next_column - column_direction));
-                    yield* king_caputure_in_direction(piece, row_direction, column_direction, fields);
+                    yield* king_caputure_in_direction(piece, row_direction, column_direction, fields, captured_pieces);
                     fields.pop();
                     move_queue = [];
                     break;
@@ -431,7 +430,7 @@ export function *king_capture(piece: PIECE): Generator<MOVE, void, void>
  * | as an argument.                |
  * ----------------------------------
  */
-export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = []): Generator<MOVE, void, void>
+export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = [], captured_pieces: PIECE[] = []): Generator<MOVE, void, void>
 {
     let jumped_row: number;
     let next_row: number;
@@ -463,7 +462,7 @@ export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = 
             can_jump = true;
             captured_pieces.push(jumped_field);
             fields.push(get_field(next_row, column + 2));
-            yield* man_capture(piece, direction, fields);
+            yield* man_capture(piece, direction, fields, captured_pieces);
             fields.pop();
             captured_pieces.pop();
         }
@@ -477,7 +476,7 @@ export function *man_capture(piece: PIECE, direction: 1 | -1, fields: FIELD[] = 
             can_jump = true;
             captured_pieces.push(jumped_field);
             fields.push(get_field(next_row, column - 2));
-            yield* man_capture(piece, direction, fields);
+            yield* man_capture(piece, direction, fields, captured_pieces);
             fields.pop();
             captured_pieces.pop();
         }

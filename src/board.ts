@@ -197,7 +197,7 @@ function black_square_clicked(this: HTMLElement): void
 {
     let clicked_field = square_to_field($(this));
     
-    if (moving && clicked_field.square.html() == "")
+    if (moving && clicked_field.piece == null)
     {
         let move_state = check_move(previous_field!, clicked_field!);
         
@@ -251,7 +251,7 @@ function black_square_clicked(this: HTMLElement): void
             }
         }
     }
-    else if (PLAYER.is_players_piece(clicked_field.square.html() as PIECE_TYPE))
+    else if (PLAYER.is_players_piece(clicked_field.piece!.type))
     {
         if (moving)
         {
