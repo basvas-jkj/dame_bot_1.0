@@ -147,18 +147,10 @@ export class PIECE
             }
             else if (next_column == this.column + 2)
             {
-                if (next_row == 7)
-                {
-                    this._type = PIECE_TYPE.black_king;
-                }
                 return BOARD.get_piece(this.row + 1, this.column + 1);
             }
             else if (next_column == this.column - 2)
             {
-                if (next_row == 7)
-                {
-                    this._type = PIECE_TYPE.black_king;
-                }
                 return BOARD.get_piece(this.row + 1, this.column - 1);
             }
             else

@@ -2,6 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
 module.exports =
 {
@@ -18,10 +19,6 @@ module.exports =
         rules:
         [
             {
-                test: /\.html$/,
-                loader: "html-loader"
-            },
-            {
                 test: /\.css$/,
                 use: [MiniCssExtractPlugin.loader, "css-loader"]
             },
@@ -34,6 +31,10 @@ module.exports =
                 type: "asset/resource"
             }
         ]
+    },
+    optimization: 
+    {
+        minimizer: ["...", new CssMinimizerPlugin()]
     },
     plugins:
     [

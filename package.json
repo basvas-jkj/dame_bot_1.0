@@ -3,22 +3,26 @@
     "version": "1.0.0",
     "description": "Dame playing program.",
     "main": "dist/index.html",
-    "scripts":
-    {
+    "repository": {
+        "repository": {
+            "type": "git",
+            "url": "https://github.com/basvas-jkj/dame_bot"
+        }
+    },
+    "scripts": {
         "debug": "webpack --mode development",
         "release": "webpack --mode production"
     },
     "author": "Václav Stupka",
     "license": "ISC",
-    "dependencies":
-    {
+    "dependencies": {
         "jquery": "^3.6.1"
     },
-    "devDependencies":
-    {
+    "devDependencies": {
         "@types/jquery": "^3.5.14",
         "clean-webpack-plugin": "^4.0.0",
         "css-loader": "^6.7.2",
+        "css-minimizer-webpack-plugin": "^4.2.2",
         "html-loader": "^4.2.0",
         "html-webpack-plugin": "^5.5.0",
         "mini-css-extract-plugin": "^2.7.0",
